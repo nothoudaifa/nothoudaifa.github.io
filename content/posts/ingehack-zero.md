@@ -1,13 +1,11 @@
 ---
 author: "nothoudaifa"
 title: "zero chall writeup from ingehack 4.0"
-date: "2024-02-26"
+date: "2025-02-26"
 tags: 
 - ctf 
-- binary exploitation 
+- pwn 
 ---
-
-# zero writeup
 
 ```jsx
 challenge author: itskarudo
