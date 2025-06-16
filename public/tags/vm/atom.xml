@@ -13,7 +13,7 @@
       <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
       
       <guid>https://nothoudaifa.github.io/posts/smileyctf2025-dna/</guid>
-      <description>TL;DR This challenge features a vm that takes your flag, treats it as a vector and multiples it by a matrix of constant values, then compares the resulting vector, if the comparision is correct it prints &amp;ldquo;CORRECT!&amp;rdquo;
+      <description>TL;DR This challenge features a vm that takes your flag, treats it as a vector and multiples it by a matrix of constant values, then compares the resulting vector to another vector, if the comparision is correct it prints &amp;ldquo;CORRECT!&amp;rdquo;
 Initial Analysis we are given two files: main.cpython-310.pyc which is our python compiled vm and vm.dna which is the vm code, the first thing i did was open https://pylingual.io to get the decompilation of the pyc, it gave me:</description>
     </item>
     
