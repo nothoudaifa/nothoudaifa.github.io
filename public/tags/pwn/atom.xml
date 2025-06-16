@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>pwn on nothoudaifa</title>
+    <link>https://nothoudaifa.github.io/tags/pwn/</link>
+    <description>Recent content in pwn on nothoudaifa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 26 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://nothoudaifa.github.io/tags/pwn/atom.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>bootflop chall writeup from ingehack 4.0</title>
+      <link>https://nothoudaifa.github.io/posts/ingehack-bootflop/</link>
+      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/ingehack-bootflop/</guid>
+      <description>challenge author: itskarudo points: 493 desc: i love esolangs, i love bootloaders. this challenge gives a custom bootloader that you have to exploit.
+we are given two files run.sh and bootflop.img (which is the bootloader image)
+first thing i did was running xxd on bootflop.img:
+00000000: fc31 d2c7 0622 7d26 7dbf 567d c706 247d .1...&amp;quot;}&amp;amp;}.V}..$} 00000010: 567d b03e e8f8 00b0 20e8 f300 e8f5 003c V}.&amp;gt;.... ......&amp;lt; 00000020: 7f74 0baa 3c0d 741e 3c0a 741a ebee 81ff .</description>
+    </item>
+    
+    <item>
+      <title>zero chall writeup from ingehack 4.0</title>
+      <link>https://nothoudaifa.github.io/posts/ingehack-zero/</link>
+      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/ingehack-zero/</guid>
+      <description>challenge author: itskarudo points: 469 desc: translation services are so slow, i want a zero latency translator for all my important business, so i made one myself, right in the kernel. this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.
+looking at run.sh:
+#!/bin/sh  qemu-system-x86_64 \  -m 128M \  -nographic \  -kernel &amp;#34;./bzImage&amp;#34; \  -append &amp;#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr&amp;#34; \  -monitor /dev/null \  -initrd &amp;#34;.</description>
+    </item>
+    
+  </channel>
+</rss>

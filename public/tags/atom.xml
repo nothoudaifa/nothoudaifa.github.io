@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on nothoudaifa</title>
+    <link>https://nothoudaifa.github.io/tags/</link>
+    <description>Recent content in Tags on nothoudaifa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 16 Jun 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://nothoudaifa.github.io/tags/atom.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ctf</title>
+      <link>https://nothoudaifa.github.io/tags/ctf/</link>
+      <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/tags/ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rev</title>
+      <link>https://nothoudaifa.github.io/tags/rev/</link>
+      <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/tags/rev/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>vm</title>
+      <link>https://nothoudaifa.github.io/tags/vm/</link>
+      <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/tags/vm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>pwn</title>
+      <link>https://nothoudaifa.github.io/tags/pwn/</link>
+      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/tags/pwn/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>misc</title>
+      <link>https://nothoudaifa.github.io/tags/misc/</link>
+      <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/tags/misc/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

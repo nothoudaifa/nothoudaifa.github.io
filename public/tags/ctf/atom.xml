@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ctf on nothoudaifa</title>
+    <link>https://nothoudaifa.github.io/tags/ctf/</link>
+    <description>Recent content in ctf on nothoudaifa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 16 Jun 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://nothoudaifa.github.io/tags/ctf/atom.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>writeup for dna chall from smiley ctf 2025</title>
+      <link>https://nothoudaifa.github.io/posts/smileyctf2025-dna/</link>
+      <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/smileyctf2025-dna/</guid>
+      <description>TL;DR This challenge features a vm that takes your flag, treats it as a vector and multiples it by a matrix of constant values, then compares the resulting vector, if the comparision is correct it prints &amp;ldquo;CORRECT!&amp;rdquo;
+Initial Analysis we are given two files: main.cpython-310.pyc which is our python compiled vm and vm.dna which is the vm code, the first thing i did was open https://pylingual.io to get the decompilation of the pyc, it gave me:</description>
+    </item>
+    
+    <item>
+      <title>bootflop chall writeup from ingehack 4.0</title>
+      <link>https://nothoudaifa.github.io/posts/ingehack-bootflop/</link>
+      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/ingehack-bootflop/</guid>
+      <description>challenge author: itskarudo points: 493 desc: i love esolangs, i love bootloaders. this challenge gives a custom bootloader that you have to exploit.
+we are given two files run.sh and bootflop.img (which is the bootloader image)
+first thing i did was running xxd on bootflop.img:
+00000000: fc31 d2c7 0622 7d26 7dbf 567d c706 247d .1...&amp;quot;}&amp;amp;}.V}..$} 00000010: 567d b03e e8f8 00b0 20e8 f300 e8f5 003c V}.&amp;gt;.... ......&amp;lt; 00000020: 7f74 0baa 3c0d 741e 3c0a 741a ebee 81ff .</description>
+    </item>
+    
+    <item>
+      <title>zero chall writeup from ingehack 4.0</title>
+      <link>https://nothoudaifa.github.io/posts/ingehack-zero/</link>
+      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/ingehack-zero/</guid>
+      <description>challenge author: itskarudo points: 469 desc: translation services are so slow, i want a zero latency translator for all my important business, so i made one myself, right in the kernel. this is a kernel exploitation challenge, we are given three files run.sh, initramfs.cpio.gz, bzImage.
+looking at run.sh:
+#!/bin/sh  qemu-system-x86_64 \  -m 128M \  -nographic \  -kernel &amp;#34;./bzImage&amp;#34; \  -append &amp;#34;console=ttyS0 quiet loglevel=3 pti=on nokaslr&amp;#34; \  -monitor /dev/null \  -initrd &amp;#34;.</description>
+    </item>
+    
+    <item>
+      <title>astea chall writeup from uiuctf 2024</title>
+      <link>https://nothoudaifa.github.io/posts/uiuctf2024-astea/</link>
+      <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/uiuctf2024-astea/</guid>
+      <description>Understanding the code: We are given this python file
+import ast def safe_import(): print(&amp;#34;Why do you need imports to make tea?&amp;#34;) def safe_call(): print(&amp;#34;Why do you need function calls to make tea?&amp;#34;) class CoolDownTea(ast.NodeTransformer): def visit_Call(self, node: ast.Call) -&amp;gt; ast.AST: return ast.Call(func=ast.Name(id=&amp;#39;safe_call&amp;#39;, ctx=ast.Load()), args=[], keywords=[]) def visit_Import(self, node: ast.AST) -&amp;gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&amp;#39;safe_import&amp;#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_ImportFrom(self, node: ast.ImportFrom) -&amp;gt; ast.AST: return ast.Expr(value=ast.Call(func=ast.Name(id=&amp;#39;safe_import&amp;#39;, ctx=ast.Load()), args=[], keywords=[])) def visit_Assign(self, node: ast.</description>
+    </item>
+    
+  </channel>
+</rss>

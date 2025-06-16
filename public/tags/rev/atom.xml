@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>rev on nothoudaifa</title>
+    <link>https://nothoudaifa.github.io/tags/rev/</link>
+    <description>Recent content in rev on nothoudaifa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 16 Jun 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://nothoudaifa.github.io/tags/rev/atom.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>writeup for dna chall from smiley ctf 2025</title>
+      <link>https://nothoudaifa.github.io/posts/smileyctf2025-dna/</link>
+      <pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/smileyctf2025-dna/</guid>
+      <description>TL;DR This challenge features a vm that takes your flag, treats it as a vector and multiples it by a matrix of constant values, then compares the resulting vector, if the comparision is correct it prints &amp;ldquo;CORRECT!&amp;rdquo;
+Initial Analysis we are given two files: main.cpython-310.pyc which is our python compiled vm and vm.dna which is the vm code, the first thing i did was open https://pylingual.io to get the decompilation of the pyc, it gave me:</description>
+    </item>
+    
+  </channel>
+</rss>
