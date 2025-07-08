@@ -3,20 +3,26 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://nothoudaifa.github.io/</loc>
-    <lastmod>2025-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url><url>
+    <loc>https://nothoudaifa.github.io/tags/autorev/</loc>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://nothoudaifa.github.io/tags/ctf/</loc>
-    <lastmod>2025-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://nothoudaifa.github.io/posts/</loc>
-    <lastmod>2025-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://nothoudaifa.github.io/tags/rev/</loc>
-    <lastmod>2025-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://nothoudaifa.github.io/tags/</loc>
-    <lastmod>2025-06-16T00:00:00+00:00</lastmod>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://nothoudaifa.github.io/posts/r3ctf2025-r3loads/</loc>
+    <lastmod>2025-07-08T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://nothoudaifa.github.io/tags/vm/</loc>
     <lastmod>2025-06-16T00:00:00+00:00</lastmod>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>autorev on nothoudaifa</title>
+    <link>https://nothoudaifa.github.io/tags/autorev/</link>
+    <description>Recent content in autorev on nothoudaifa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 08 Jul 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://nothoudaifa.github.io/tags/autorev/atom.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>writeup for rev/r3loads chall from r3ctf 2025</title>
+      <link>https://nothoudaifa.github.io/posts/r3ctf2025-r3loads/</link>
+      <pubDate>Tue, 08 Jul 2025 00:00:00 +0000</pubDate>
+      
+      <guid>https://nothoudaifa.github.io/posts/r3ctf2025-r3loads/</guid>
+      <description>points: 929 pts solves: 11 solves this weekend i played r3ctf, i solved this challenge with @aymenmog, i really enjoyed doing this autorev, so i decided to make this writeup.
+Initial analysis this is an autorev chall, we are given 11423 executables each one is in it’s directory along with a set of shared libraries, the readme says that each binary takes 8 bytes input and final output of the chall will be a jpg which is the concatenation of 11423 right inputs.</description>
+    </item>
+    
+  </channel>
+</rss>

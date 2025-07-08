@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>writeup for rev/r3loads chall from r3ctf 2025 | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:title" content="writeup for rev/r3loads chall from r3ctf 2025" />
+<meta property="og:description" content="points: 929 pts solves: 11 solves this weekend i played r3ctf, i solved this challenge with @aymenmog, i really enjoyed doing this autorev, so i decided to make this writeup.
+Initial analysis this is an autorev chall, we are given 11423 executables each one is in it’s directory along with a set of shared libraries, the readme says that each binary takes 8 bytes input and final output of the chall will be a jpg which is the concatenation of 11423 right inputs." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nothoudaifa.github.io/posts/r3ctf2025-r3loads/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2025-07-08T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-07-08T00:00:00+00:00" />
+
+
+    <meta itemprop="name" content="writeup for rev/r3loads chall from r3ctf 2025">
+<meta itemprop="description" content="points: 929 pts solves: 11 solves this weekend i played r3ctf, i solved this challenge with @aymenmog, i really enjoyed doing this autorev, so i decided to make this writeup.
+Initial analysis this is an autorev chall, we are given 11423 executables each one is in it’s directory along with a set of shared libraries, the readme says that each binary takes 8 bytes input and final output of the chall will be a jpg which is the concatenation of 11423 right inputs."><meta itemprop="datePublished" content="2025-07-08T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2025-07-08T00:00:00+00:00" />
+<meta itemprop="wordCount" content="2539">
+<meta itemprop="keywords" content="ctf,rev,autorev," />
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/r3ctf2025-r3loads/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "writeup for rev\/r3loads chall from r3ctf 2025",
+      "headline": "writeup for rev\/r3loads chall from r3ctf 2025",
+      "alternativeHeadline": "",
+      "description": "points: 929 pts solves: 11 solves this weekend i played r3ctf, i solved this challenge with @aymenmog, i really enjoyed doing this autorev, so i decided to make this writeup.\nInitial analysis this is an autorev chall, we are given 11423 executables each one is in it’s directory along with a set of shared libraries, the readme says that each binary takes 8 bytes input and final output of the chall will be a jpg which is the concatenation of 11423 right inputs.",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/r3ctf2025-r3loads\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2025",
+      "dateCreated": "2025-07-08T00:00:00.00Z",
+      "datePublished": "2025-07-08T00:00:00.00Z",
+      "dateModified": "2025-07-08T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/r3ctf2025-r3loads\/",
+      "wordCount" : "2539",
+      "genre" : [ "ctf" , "rev" , "autorev" ],
+      "keywords" : [ "ctf" , "rev" , "autorev" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">writeup for rev/r3loads chall from r3ctf 2025</h2>
+      <pre tabindex="0"><code>points: 929 pts
+solves: 11 solves
+</code></pre><p>this weekend i played r3ctf, i solved this challenge with @aymenmog, i really enjoyed doing this autorev, so i decided to make this writeup.</p>
+<h2 id="initial-analysis">Initial analysis</h2>
+<p>this is an autorev chall, we are given 11423 executables each one is in it’s directory along with a set of shared libraries, the readme says that each binary takes 8 bytes input and final output of the chall will be a jpg which is the concatenation of 11423 right inputs.</p>
+<p>each part is like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">player@notarch:~/ctfs/r3/r3loads/game/300$ ls
+beatme                               RRRRRRRRRRRR3R33RRRR3R3R3R3RRR33.so  RRRRRRRRRRRR3R33RRRRRRRRRRR33333.so  RRRRRRRRRRRR3R3R33333RR3R33333RR.so
+RRRRRRRRRRRR3R33RRR3R3RRRR333RRR.so  RRRRRRRRRRRR3R33RRRR3R3R3R3RRRR3.so  RRRRRRRRRRRR3R33RRRRRRRRRRR333R3.so  RRRRRRRRRRRR3R3R33333RR3R3333R3R.so
+RRRRRRRRRRRR3R33RRR3R3RRRR33R33R.so  RRRRRRRRRRRR3R33RRRRR33R3R33333R.so  RRRRRRRRRRRR3R33RRRRRRRRRRR33R33.so  RRRRRRRRRRRR3R3R33333RR3R3333RRR.so
+RRRRRRRRRRRR3R33RRR3R3RRRR33R3RR.so  RRRRRRRRRRRR3R33RRRRR33R3R3333RR.so  RRRRRRRRRRRR3R33RRRRRRRRRRR33RR3.so  RRRRRRRRRRRR3R3R33333RR3R333R33R.so
+RRRRRRRRRRRR3R33RRRR33333R33RRR3.so  RRRRRRRRRRRR3R33RRRRR33R3R333R3R.so  RRRRRRRRRRRR3R33RRRRRRRRRRR3R333.so  RRRRRRRRRRRR3R3R3333R3R33RRR333R.so
+RRRRRRRRRRRR3R33RRRR33333R3R3333.so  RRRRRRRRRRRR3R33RRRRR33R3R333RRR.so  RRRRRRRRRRRR3R33RRRRRRRRRRR3R3R3.so  RRRRRRRRRRRR3R3R3333R3R33RRR33RR.so
+RRRRRRRRRRRR3R33RRRR33333R3R33R3.so  RRRRRRRRRRRR3R33RRRRR33R3R33R33R.so  RRRRRRRRRRRR3R3R3333333RRR33RRR3.so  RRRRRRRRRRRR3R3R3333R3R33RRR3R3R.so
+RRRRRRRRRRRR3R33RRRR33333R3R3R33.so  RRRRRRRRRRRR3R33RRRRR33R3R33R3RR.so  RRRRRRRRRRRR3R3R3333333RRR3R3333.so  RRRRRRRRRRRR3R3R3333R3R33RRR3RRR.so
+RRRRRRRRRRRR3R33RRRR33333R3R3RR3.so  RRRRRRRRRRRR3R33RRRRRR333333R333.so  RRRRRRRRRRRR3R3R3333333RRR3R33R3.so  RRRRRRRRRRRR3R3R3333R3R33RRRR33R.so
+RRRRRRRRRRRR3R33RRRR3R3R3R3RR3R3.so  RRRRRRRRRRRR3R33RRRRRR333333R3R3.so  RRRRRRRRRRRR3R3R3333333RRR3R3R33.so  RRRRRRRRRRRR3R3R3333RR3RR33RRRRR.so 
+</code></pre></div><p>running it gives us:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">player@notarch:~/ctfs/r3/r3loads/game/300$ ./beatme
+Weclome to r3ctf 2025, can you beat me? 300/11423
+Input something: 
+aaaabbbb
+Try again!
+</code></pre></div><p>we will first starting by reversing a binary, then see what we can automate and script it.</p>
+<h2 id="the-rev-part">the “rev” part:</h2>
+<p>loading one executable in ida we get <a href="/r3ctf-r3loads/main-decomp.c">this</a> (variable declarations removed for clarity), this main function can be separated into 3 parts:</p>
+<h4 id="part-1-of-main-loading-the-functions">Part 1 of main: loading the functions</h4>
+<p>the first thing it does is load 10 functions (which will be used later)  from the dynamic libraries in the same directory, it uses dlopen to load the library and dlsym to get the function from it, i will show how i got what one function does:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">handlee</span> <span style="color:#f92672">=</span> <span style="color:#111">dlopen</span><span style="color:#111">(</span><span style="color:#d88200">&#34;./RRRRRRRRRRRRRRRRRRR33RRR33R3RRRR.so&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#f92672">!</span><span style="color:#111">handlee</span> <span style="color:#111">)</span>
+    <span style="color:#111">exit</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+  <span style="color:#111">dlerror</span><span style="color:#111">();</span>
+  <span style="color:#111">qword_7048</span> <span style="color:#f92672">=</span> <span style="color:#111">dlsym</span><span style="color:#111">(</span><span style="color:#111">handlee</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;RRRRRRRRRRRRRRRRRRR33RRR33R3RRR3&#34;</span><span style="color:#111">);</span>
+</code></pre></div><p>opening this function in binja we get the following:</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_18-50-52.png"
+  alt="Screenshot from 2025-07-07 18-50-52.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>it loads another function from another library and calls it, while only operating on arg3.</p>
+<p>it seems that it keeps doing this a few times until it reaches the last function which defines the operation.</p>
+<p>the path (in this case it only calls dlsym one time):</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_18-52-16.png"
+  alt="Screenshot from 2025-07-07 18-52-16.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>we can see in the end it returns arg1 - arg2, and also it does not use the third argument, this actually is the case for all the other functions, arg3 is never used, it is likely used as an obfuscation mechanism so we can ignore it.</p>
+<p>the functions in order are (note that all arguments and returns are unsigned ints):</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">xor_first_two</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">^</span> <span style="color:#111">arg2</span>
+<span style="color:#111">read_integer_at_offset</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">((</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">arg1</span><span style="color:#111">)[</span><span style="color:#111">arg2</span><span style="color:#111">]</span>
+<span style="color:#111">add_at_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#f92672">*</span><span style="color:#111">((</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">arg1</span><span style="color:#111">)</span> <span style="color:#f92672">+=</span> <span style="color:#111">arg2</span>
+<span style="color:#111">and_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">arg2</span>
+<span style="color:#111">add_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">+</span> <span style="color:#111">arg2</span>
+<span style="color:#111">subtract_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">-</span> <span style="color:#111">arg2</span>
+<span style="color:#111">mult_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">*</span> <span style="color:#111">arg2</span>
+<span style="color:#111">or_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">|</span> <span style="color:#111">arg2</span>
+<span style="color:#111">integer_div_arg1_arg2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#111">arg1</span> <span style="color:#f92672">/</span> <span style="color:#111">arg2</span>
+<span style="color:#111">bitwise_not</span> <span style="color:#f92672">=&gt;</span> <span style="color:#f92672">~</span><span style="color:#111">arg1</span>
+</code></pre></div><p>after reversing all functions and renaming them we move to the second part.</p>
+<h4 id="part-2-of-main-setting-the-key">Part 2 of main: Setting the key</h4>
+<p>it’s code after renaming the functions is accessible here, the first thing i noticed about this part is that it is all just operations on constants, it seems to be writing four unsigned ints in v91, we can extract it using gdb by setting a breakpoint just before the call to sub_1630, then inspecting the memory at rsi.</p>
+<h4 id="part-3-of-main-handling-input">Part 3 of main: Handling input</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Weclome to r3ctf 2025, can you beat me? 1/11423&#34;</span><span style="color:#111">);</span>
+  <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Input something: &#34;</span><span style="color:#111">);</span>
+  <span style="color:#111">buf</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">;</span>
+  <span style="color:#111">read</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#ae81ff">8uLL</span><span style="color:#111">);</span>
+  <span style="color:#111">sub_1630</span><span style="color:#111">((</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#111">v91</span><span style="color:#111">);</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">buf</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xF06203EC3D2C5B74LL</span> <span style="color:#111">)</span>
+    <span style="color:#111">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;You win!&#34;</span><span style="color:#111">);</span>
+  <span style="color:#00a8c8">else</span>
+    <span style="color:#75af00">puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Try again!&#34;</span><span style="color:#111">);</span>
+</code></pre></div><p>this part read 8 bytes, then calls sub_1630 on it with v91 which is constant and likely used as a key to some encryption on buf.</p>
+<h3 id="reversing-the-encryption-function">reversing the encryption function:</h3>
+<p>the encrypt function decompilation is <a href="/r3ctf-r3loads/encrypt-decomp.c">here</a>, it seems very scary, but we will go at it bit by bit till we understand it.</p>
+<p>at first, it takes our 8 bytes input and splits it into two unsigned ints, <code>first</code> and <code>second</code>, then it sets <code>S</code> a State array (similar to rc4) using the key (this array is only read from), then it loops 0x478 times while doing some operations on <code>first</code> and <code>second</code>, in the end it writes them back to our input.</p>
+<p>now before i started reversing this function, i noticed that there are four regions of code that only use constant values, i marked them on the code above, here is an example one:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">v162</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>                      
+    <span style="color:#111">v159</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v154</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">3879220815LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1303544047LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1673289997LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v148</span> <span style="color:#f92672">=</span> <span style="color:#111">or_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">119385303LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3231329148LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">141954786LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v145</span> <span style="color:#f92672">=</span> <span style="color:#111">bitwise_not</span><span style="color:#111">;</span>
+    <span style="color:#111">v137</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">1503872738LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">978965565LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1470160614LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v125</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">761654413LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3043887596LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4085454309LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v120</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v131</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">3333670936LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2147831941LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2217132274LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v115</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">4141055499LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1038626365LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1517838417LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v112</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">;</span>
+    <span style="color:#111">v109</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">2686461105LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3867813406LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">686930351LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v106</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">3259940977LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1820144441LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2738368048LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v103</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v2</span> <span style="color:#f92672">=</span> <span style="color:#111">bitwise_not</span><span style="color:#111">(</span><span style="color:#ae81ff">2920661428LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">408102610LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">758347707LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v3</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">2688446990LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3924691225LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3780184521LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v4</span> <span style="color:#f92672">=</span> <span style="color:#111">or_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v5</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">715168552LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4203380807LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4042894304LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v6</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">3362982059LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1951226027LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2091265364LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v7</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">2447727191LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4231433857LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2356928693LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v8</span> <span style="color:#f92672">=</span> <span style="color:#111">v4</span><span style="color:#111">(</span><span style="color:#111">v7</span><span style="color:#111">,</span> <span style="color:#111">v6</span><span style="color:#111">,</span> <span style="color:#111">v5</span><span style="color:#111">);</span>
+    <span style="color:#111">v9</span> <span style="color:#f92672">=</span> <span style="color:#111">v103</span><span style="color:#111">(</span><span style="color:#111">v8</span><span style="color:#111">,</span> <span style="color:#111">v3</span><span style="color:#111">,</span> <span style="color:#111">v2</span><span style="color:#111">);</span>
+    <span style="color:#111">v10</span> <span style="color:#f92672">=</span> <span style="color:#111">v112</span><span style="color:#111">(</span><span style="color:#111">v9</span><span style="color:#111">,</span> <span style="color:#111">v106</span><span style="color:#111">,</span> <span style="color:#111">v109</span><span style="color:#111">);</span>
+    <span style="color:#111">v11</span> <span style="color:#f92672">=</span> <span style="color:#111">v120</span><span style="color:#111">(</span><span style="color:#111">v10</span><span style="color:#111">,</span> <span style="color:#111">v115</span><span style="color:#111">,</span> <span style="color:#111">v131</span><span style="color:#111">);</span>
+    <span style="color:#111">v12</span> <span style="color:#f92672">=</span> <span style="color:#111">v145</span><span style="color:#111">(</span><span style="color:#111">v11</span><span style="color:#111">,</span> <span style="color:#111">v125</span><span style="color:#111">,</span> <span style="color:#111">v137</span><span style="color:#111">);</span>
+    <span style="color:#111">LODWORD</span><span style="color:#111">(</span><span style="color:#111">v159</span><span style="color:#111">)</span> <span style="color:#f92672">=</span> <span style="color:#111">v159</span><span style="color:#111">(</span><span style="color:#111">v12</span><span style="color:#111">,</span> <span style="color:#111">v148</span><span style="color:#111">,</span> <span style="color:#111">v154</span><span style="color:#111">);</span>
+    <span style="color:#111">v155</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v149</span> <span style="color:#f92672">=</span> <span style="color:#111">integer_div_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v146</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v138</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">3879220815LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1303544047LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1673289997LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v126</span> <span style="color:#f92672">=</span> <span style="color:#111">or_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">119385303LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3231329148LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">141954786LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v121</span> <span style="color:#f92672">=</span> <span style="color:#111">bitwise_not</span><span style="color:#111">;</span>
+    <span style="color:#111">v132</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">1503872738LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">978965565LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1470160614LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v116</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">761654413LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3043887596LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4085454309LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v113</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v110</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">3333670936LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2147831941LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2217132274LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v107</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">4141055499LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1038626365LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1517838417LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v104</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">;</span>
+    <span style="color:#111">v102</span> <span style="color:#f92672">=</span> <span style="color:#111">add_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">2686461105LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3867813406LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">686930351LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v101</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">3259940977LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1820144441LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2738368048LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v100</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v13</span> <span style="color:#f92672">=</span> <span style="color:#111">bitwise_not</span><span style="color:#111">(</span><span style="color:#ae81ff">2920661428LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">408102610LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">758347707LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v14</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">2688446990LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3924691225LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3780184521LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v15</span> <span style="color:#f92672">=</span> <span style="color:#111">or_arg1_arg2</span><span style="color:#111">;</span>
+    <span style="color:#111">v16</span> <span style="color:#f92672">=</span> <span style="color:#111">xor_first_two</span><span style="color:#111">(</span><span style="color:#ae81ff">715168552LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4203380807LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4042894304LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v17</span> <span style="color:#f92672">=</span> <span style="color:#111">and_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">3362982059LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1951226027LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2091265364LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v18</span> <span style="color:#f92672">=</span> <span style="color:#111">mult_arg1_arg2</span><span style="color:#111">(</span><span style="color:#ae81ff">2447727191LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">4231433857LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">2356928693LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v19</span> <span style="color:#f92672">=</span> <span style="color:#111">v15</span><span style="color:#111">(</span><span style="color:#111">v18</span><span style="color:#111">,</span> <span style="color:#111">v17</span><span style="color:#111">,</span> <span style="color:#111">v16</span><span style="color:#111">);</span>
+    <span style="color:#111">v20</span> <span style="color:#f92672">=</span> <span style="color:#111">v100</span><span style="color:#111">(</span><span style="color:#111">v19</span><span style="color:#111">,</span> <span style="color:#111">v14</span><span style="color:#111">,</span> <span style="color:#111">v13</span><span style="color:#111">);</span>
+    <span style="color:#111">v21</span> <span style="color:#f92672">=</span> <span style="color:#111">v104</span><span style="color:#111">(</span><span style="color:#111">v20</span><span style="color:#111">,</span> <span style="color:#111">v101</span><span style="color:#111">,</span> <span style="color:#111">v102</span><span style="color:#111">);</span>
+    <span style="color:#111">v22</span> <span style="color:#f92672">=</span> <span style="color:#111">v113</span><span style="color:#111">(</span><span style="color:#111">v21</span><span style="color:#111">,</span> <span style="color:#111">v107</span><span style="color:#111">,</span> <span style="color:#111">v110</span><span style="color:#111">);</span>
+    <span style="color:#111">v23</span> <span style="color:#f92672">=</span> <span style="color:#111">v121</span><span style="color:#111">(</span><span style="color:#111">v22</span><span style="color:#111">,</span> <span style="color:#111">v116</span><span style="color:#111">,</span> <span style="color:#111">v132</span><span style="color:#111">);</span>
+    <span style="color:#111">v24</span> <span style="color:#f92672">=</span> <span style="color:#111">v146</span><span style="color:#111">(</span><span style="color:#111">v23</span><span style="color:#111">,</span> <span style="color:#111">v126</span><span style="color:#111">,</span> <span style="color:#111">v138</span><span style="color:#111">);</span>
+    <span style="color:#111">v25</span> <span style="color:#f92672">=</span> <span style="color:#111">v149</span><span style="color:#111">(</span><span style="color:#111">v24</span><span style="color:#111">,</span> <span style="color:#ae81ff">7LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">1501804614LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v26</span> <span style="color:#f92672">=</span> <span style="color:#111">v155</span><span style="color:#111">(</span><span style="color:#111">v25</span><span style="color:#111">,</span> <span style="color:#ae81ff">7LL</span><span style="color:#111">,</span> <span style="color:#ae81ff">3199106012LL</span><span style="color:#111">);</span>
+    <span style="color:#111">v27</span> <span style="color:#f92672">=</span> <span style="color:#111">pow</span><span style="color:#111">(</span><span style="color:#ae81ff">2LL</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#111">)((</span><span style="color:#111">_DWORD</span><span style="color:#111">)</span><span style="color:#111">v159</span> <span style="color:#f92672">-</span> <span style="color:#111">v26</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">),</span> <span style="color:#ae81ff">3474473344LL</span><span style="color:#111">);</span>
+</code></pre></div><p>it basically does some operations then calls <code>pow(2, result)</code> (third arg of pow is not used), then the rest of the logic uses it’s result for calculations, this pattern repeats four times inside the loop, we can replace those regions by their final results in the decompilation to simplify it.</p>
+<p>to get this four constants i used gdb with dprintf (setting the breakpoint at the final instruction before pow returns) to print the return value of pow.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">dprintf</span> <span style="color:#f92672">*</span><span style="color:#ae81ff">0x162E</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x555555554000</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;rax = 0x%02x</span><span style="color:#8045ff">\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">,</span> <span style="color:#960050;background-color:#1e0010">$</span><span style="color:#111">rax</span>
+</code></pre></div><p>we get these values</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x08</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x08</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x20</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x10</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x08</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x08</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x20</span>
+<span style="color:#111">rax</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x10</span>
+</code></pre></div><p>and sure enough, these four values kept repeating, meaning my observation was right, now putting them inside the loop gives us the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#00a8c8">do</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">v172</span> <span style="color:#f92672">=</span> <span style="color:#111">v168</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">3LL</span><span style="color:#111">;</span>
+    <span style="color:#111">v27</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">;</span> <span style="color:#75715e">// static 1 output
+</span><span style="color:#75715e"></span>    <span style="color:#111">v173</span> <span style="color:#f92672">=</span> <span style="color:#111">second</span> <span style="color:#f92672">*</span> <span style="color:#111">v27</span>
+    <span style="color:#111">v47</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">;</span> <span style="color:#75715e">// static 2 output
+</span><span style="color:#75715e"></span>    <span style="color:#111">v174</span> <span style="color:#f92672">=</span> <span style="color:#111">second</span> <span style="color:#f92672">/</span> <span style="color:#111">v47</span><span style="color:#111">;</span>
+    <span style="color:#111">v175</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v172</span><span style="color:#111">];</span>
+    <span style="color:#111">v175</span> <span style="color:#f92672">=</span> <span style="color:#111">v175</span><span style="color:#f92672">+</span><span style="color:#111">v168</span><span style="color:#111">;</span>
+    <span style="color:#111">v176</span> <span style="color:#f92672">=</span> <span style="color:#111">v173</span><span style="color:#f92672">^</span><span style="color:#111">v174</span><span style="color:#111">;</span>
+    <span style="color:#111">v176</span> <span style="color:#f92672">=</span> <span style="color:#111">v176</span><span style="color:#f92672">+</span><span style="color:#111">second</span><span style="color:#111">;</span>
+    <span style="color:#111">v51</span> <span style="color:#f92672">=</span> <span style="color:#f92672">~</span><span style="color:#111">v175</span><span style="color:#111">;</span>
+    <span style="color:#111">v29</span> <span style="color:#f92672">=</span> <span style="color:#111">v51</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">v176</span><span style="color:#111">;</span>
+    <span style="color:#111">v53</span> <span style="color:#f92672">=</span> <span style="color:#f92672">~</span><span style="color:#111">v176</span><span style="color:#111">;</span>
+    <span style="color:#111">v54</span> <span style="color:#f92672">=</span> <span style="color:#111">v53</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">v175</span><span style="color:#111">;</span>
+    <span style="color:#111">v55</span> <span style="color:#f92672">=</span> <span style="color:#111">v54</span> <span style="color:#f92672">|</span> <span style="color:#111">v29</span><span style="color:#111">;</span>
+    <span style="color:#111">first</span> <span style="color:#f92672">+=</span> <span style="color:#111">v55</span><span style="color:#111">;</span>
+    
+    <span style="color:#111">v72</span> <span style="color:#f92672">=</span><span style="color:#ae81ff">0x20</span><span style="color:#111">;</span> <span style="color:#75715e">// static 3 output
+</span><span style="color:#75715e"></span>    <span style="color:#111">v177</span> <span style="color:#f92672">=</span> <span style="color:#111">first</span> <span style="color:#f92672">/</span> <span style="color:#111">v72</span><span style="color:#111">;</span>
+    <span style="color:#111">v88</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x10</span><span style="color:#111">;</span> <span style="color:#75715e">// static 4 output
+</span><span style="color:#75715e"></span>    <span style="color:#111">v178</span> <span style="color:#f92672">=</span> <span style="color:#111">first</span> <span style="color:#f92672">*</span> <span style="color:#111">v88</span><span style="color:#111">;</span>
+    <span style="color:#111">v91</span> <span style="color:#f92672">=</span> <span style="color:#f92672">~</span><span style="color:#111">v177</span><span style="color:#111">;</span>
+    <span style="color:#111">v80</span> <span style="color:#f92672">=</span> <span style="color:#111">v91</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">v178</span><span style="color:#111">;</span>
+    <span style="color:#111">v93</span> <span style="color:#f92672">=</span> <span style="color:#f92672">~</span><span style="color:#111">v178</span><span style="color:#111">;</span>
+    <span style="color:#111">v94</span> <span style="color:#f92672">=</span> <span style="color:#111">v93</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">v177</span><span style="color:#111">;</span>
+    <span style="color:#111">v179</span> <span style="color:#f92672">=</span> <span style="color:#111">v94</span> <span style="color:#f92672">|</span> <span style="color:#111">v80</span><span style="color:#111">;</span>
+    <span style="color:#111">v168</span> <span style="color:#f92672">+=</span>  <span style="color:#ae81ff">3284565212</span><span style="color:#111">;</span>
+    <span style="color:#111">v180</span> <span style="color:#f92672">=</span> <span style="color:#111">v179</span> <span style="color:#f92672">+</span> <span style="color:#111">first</span><span style="color:#111">;</span>
+    <span style="color:#111">v96</span> <span style="color:#f92672">=</span> <span style="color:#111">v168</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">0x800LL</span><span style="color:#111">;</span>
+    <span style="color:#111">v181</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">255LL</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">v96</span><span style="color:#111">;</span>
+    <span style="color:#111">v182</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v181</span><span style="color:#111">]</span>
+    <span style="color:#111">v183</span> <span style="color:#f92672">=</span> <span style="color:#111">v182</span> <span style="color:#f92672">+</span> <span style="color:#111">v168</span><span style="color:#111">;</span>
+    <span style="color:#111">v98</span> <span style="color:#f92672">=</span> <span style="color:#111">v180</span> <span style="color:#f92672">^</span> <span style="color:#111">v183</span><span style="color:#111">;</span>
+    <span style="color:#111">second</span> <span style="color:#f92672">+=</span> <span style="color:#111">v98</span><span style="color:#111">;</span>
+    <span style="color:#111">v185</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1uLL</span><span style="color:#111">;</span>
+  <span style="color:#111">}</span>
+  <span style="color:#00a8c8">while</span> <span style="color:#111">(</span> <span style="color:#ae81ff">0x478</span> <span style="color:#f92672">&gt;=</span> <span style="color:#111">v185</span> <span style="color:#111">);</span>
+</code></pre></div><p>now as you can see, this is pretty good c decompilation, i can reverse it but i still used llm to turn it into a more simplified c version, so i can use it for scripting, the four static constants are used for multiplication and division, and since they are powers of 2, they are simplified to right and left shifts. it is also using <code>v168</code> to index into the state array, which is incremented by a constant value 0x9D175C01 (note that the addition overflows, and the result will be cut to fit 32bits).</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#00a8c8">uint64_t</span> <span style="color:#75af00">enc</span><span style="color:#111">(</span><span style="color:#00a8c8">uint32_t</span> <span style="color:#f92672">*</span><span style="color:#111">input</span><span style="color:#111">,</span> <span style="color:#00a8c8">uint32_t</span> <span style="color:#f92672">*</span><span style="color:#111">key</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#ae81ff">256</span><span style="color:#111">];</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">first</span> <span style="color:#f92672">=</span> <span style="color:#111">input</span><span style="color:#111">[</span><span style="color:#ae81ff">0</span><span style="color:#111">];</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">second</span> <span style="color:#f92672">=</span> <span style="color:#111">input</span><span style="color:#111">[</span><span style="color:#ae81ff">1</span><span style="color:#111">];</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v168</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">uint64_t</span> <span style="color:#111">v185</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+
+    <span style="color:#75715e">// Initialize S-box
+</span><span style="color:#75715e"></span>    <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">255</span><span style="color:#111">;</span> <span style="color:#f92672">++</span><span style="color:#111">i</span><span style="color:#111">)</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">i</span><span style="color:#111">;</span>
+
+    <span style="color:#75715e">// RC4-style key scheduling
+</span><span style="color:#75715e"></span>    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v170</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">v171</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">255</span><span style="color:#111">;</span> <span style="color:#f92672">++</span><span style="color:#111">i</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v184</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">];</span>
+        <span style="color:#111">v170</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">v184</span> <span style="color:#f92672">+</span> <span style="color:#111">v170</span> <span style="color:#f92672">+</span> <span style="color:#111">key</span><span style="color:#111">[</span><span style="color:#111">v171</span><span style="color:#111">])</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span><span style="color:#111">;</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">tmp</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">];</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v170</span><span style="color:#111">];</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v170</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">tmp</span><span style="color:#111">;</span>
+
+        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#f92672">++</span><span style="color:#111">v171</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">)</span>
+            <span style="color:#111">v171</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#111">}</span>
+
+    <span style="color:#00a8c8">do</span> <span style="color:#111">{</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v172</span> <span style="color:#f92672">=</span> <span style="color:#111">v168</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">3</span><span style="color:#111">;</span> <span style="color:#75715e">// 7. we can get this after decrementig v168 by the constant
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v175</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v172</span><span style="color:#111">]</span> <span style="color:#f92672">+</span> <span style="color:#111">v168</span><span style="color:#111">);</span> <span style="color:#75715e">// 8. obviously we got this
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v176</span> <span style="color:#f92672">=</span> <span style="color:#111">((</span><span style="color:#111">second</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">)</span> <span style="color:#f92672">^</span> <span style="color:#111">(</span><span style="color:#111">second</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">))</span> <span style="color:#f92672">+</span> <span style="color:#111">second</span><span style="color:#111">;</span> <span style="color:#75715e">// 9. this is using the second before encrypting it, which we decrypted in step 6
+</span><span style="color:#75715e"></span>        <span style="color:#111">first</span> <span style="color:#f92672">+=</span> <span style="color:#111">v175</span> <span style="color:#f92672">^</span> <span style="color:#111">v176</span><span style="color:#111">;</span>  <span style="color:#75715e">// 10. this we can get since.
+</span><span style="color:#75715e"></span>
+        <span style="color:#75715e">// Second part operations
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v179</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">first</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">5</span><span style="color:#111">)</span> <span style="color:#f92672">^</span> <span style="color:#111">(</span><span style="color:#111">first</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">4</span><span style="color:#111">);</span> <span style="color:#75715e">// 5. v179 we have since it&#39;s using the first after it is incremented (it&#39;s using the encrypted first)
+</span><span style="color:#75715e"></span>        <span style="color:#111">v168</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0x9D175C01U</span><span style="color:#111">;</span>  <span style="color:#75715e">// Constant increment
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v180</span> <span style="color:#f92672">=</span> <span style="color:#111">v179</span> <span style="color:#f92672">+</span> <span style="color:#111">first</span><span style="color:#111">;</span> <span style="color:#75715e">// 6. since we have this we can get the decrypted value of second (by subtracting the xor result)
+</span><span style="color:#75715e"></span>
+        <span style="color:#75715e">// Final operations
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v181</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">v168</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">11</span><span style="color:#111">)</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span><span style="color:#111">;</span> <span style="color:#75715e">// 2. we have this value since we have v168
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v183</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v181</span><span style="color:#111">]</span> <span style="color:#f92672">+</span> <span style="color:#111">v168</span><span style="color:#111">;</span> <span style="color:#75715e">// 3. this too since we just calculated v181
+</span><span style="color:#75715e"></span>        <span style="color:#111">second</span> <span style="color:#f92672">+=</span> <span style="color:#111">v180</span> <span style="color:#f92672">^</span> <span style="color:#111">v183</span><span style="color:#111">;</span> <span style="color:#75715e">// 4. to get this we need v180
+</span><span style="color:#75715e"></span>
+        <span style="color:#111">v185</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+    <span style="color:#111">}</span> <span style="color:#00a8c8">while</span> <span style="color:#111">(</span><span style="color:#111">v185</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0x478</span><span style="color:#111">);</span>
+
+    <span style="color:#75715e">// 1. we start here, where we have first and second and the last value of v168
+</span><span style="color:#75715e"></span>
+    <span style="color:#111">input</span><span style="color:#111">[</span><span style="color:#ae81ff">0</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">first</span><span style="color:#111">;</span>
+    <span style="color:#111">input</span><span style="color:#111">[</span><span style="color:#ae81ff">1</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">second</span><span style="color:#111">;</span>
+
+<span style="color:#111">}</span>
+</code></pre></div><p>now our task is to reverse this function, i have written my line of thought for reversing it&rsquo;s operations as comments in the code above, follow steps 1 to 10.</p>
+<p>here is the final decryption script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#00a8c8">uint64_t</span> <span style="color:#75af00">dec</span><span style="color:#111">(</span><span style="color:#00a8c8">uint32_t</span> <span style="color:#111">first</span><span style="color:#111">,</span> <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">second</span><span style="color:#111">,</span> <span style="color:#00a8c8">uint32_t</span> <span style="color:#f92672">*</span><span style="color:#111">key</span><span style="color:#111">,</span> <span style="color:#00a8c8">uint32_t</span><span style="color:#f92672">*</span> <span style="color:#111">output</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#ae81ff">256</span><span style="color:#111">];</span>
+    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v168</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">uint64_t</span> <span style="color:#111">v185</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+
+    <span style="color:#75715e">// Initialize S-box
+</span><span style="color:#75715e"></span>    <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">255</span><span style="color:#111">;</span> <span style="color:#f92672">++</span><span style="color:#111">i</span><span style="color:#111">)</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">i</span><span style="color:#111">;</span>
+
+    <span style="color:#75715e">// RC4-style key scheduling
+</span><span style="color:#75715e"></span>    <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v170</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">v171</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">255</span><span style="color:#111">;</span> <span style="color:#f92672">++</span><span style="color:#111">i</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v184</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">];</span>
+        <span style="color:#111">v170</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">v184</span> <span style="color:#f92672">+</span> <span style="color:#111">v170</span> <span style="color:#f92672">+</span> <span style="color:#111">key</span><span style="color:#111">[</span><span style="color:#111">v171</span><span style="color:#111">])</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span><span style="color:#111">;</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">tmp</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">];</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v170</span><span style="color:#111">];</span>
+        <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v170</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">tmp</span><span style="color:#111">;</span>
+
+        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#f92672">++</span><span style="color:#111">v171</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">)</span>
+            <span style="color:#111">v171</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+    <span style="color:#111">}</span>
+
+    <span style="color:#111">v168</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xa2c473fc</span><span style="color:#111">;</span> <span style="color:#75715e">// this is the last value of v168
+</span><span style="color:#75715e"></span>
+    <span style="color:#00a8c8">do</span> <span style="color:#111">{</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v181</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">v168</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">11</span><span style="color:#111">)</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span><span style="color:#111">;</span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v183</span> <span style="color:#f92672">=</span> <span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v181</span><span style="color:#111">]</span> <span style="color:#f92672">+</span> <span style="color:#111">v168</span><span style="color:#111">;</span>
+
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v179</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">first</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">5</span><span style="color:#111">)</span> <span style="color:#f92672">^</span> <span style="color:#111">(</span><span style="color:#111">first</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">4</span><span style="color:#111">);</span>
+
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v180</span> <span style="color:#f92672">=</span> <span style="color:#111">v179</span> <span style="color:#f92672">+</span> <span style="color:#111">first</span><span style="color:#111">;</span>
+
+        <span style="color:#111">second</span> <span style="color:#f92672">-=</span> <span style="color:#111">v180</span> <span style="color:#f92672">^</span> <span style="color:#111">v183</span><span style="color:#111">;</span>
+
+        <span style="color:#111">v168</span><span style="color:#f92672">-=</span><span style="color:#ae81ff">0x9D175C01</span><span style="color:#111">;</span> <span style="color:#75715e">// we are going backwards now
+</span><span style="color:#75715e"></span>
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v172</span> <span style="color:#f92672">=</span> <span style="color:#111">v168</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">3</span><span style="color:#111">;</span> <span style="color:#75715e">// this we have, just decrement v168 
+</span><span style="color:#75715e"></span>        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v175</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">S</span><span style="color:#111">[</span><span style="color:#111">v172</span><span style="color:#111">]</span> <span style="color:#f92672">+</span> <span style="color:#111">v168</span><span style="color:#111">);</span> <span style="color:#75715e">// this too we have
+</span><span style="color:#75715e"></span>                                          
+        <span style="color:#00a8c8">uint32_t</span> <span style="color:#111">v176</span> <span style="color:#f92672">=</span> <span style="color:#111">((</span><span style="color:#111">second</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">)</span> <span style="color:#f92672">^</span> <span style="color:#111">(</span><span style="color:#111">second</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">3</span><span style="color:#111">))</span> <span style="color:#f92672">+</span> <span style="color:#111">second</span><span style="color:#111">;</span> <span style="color:#75715e">// use the decrypted second value to get this value
+</span><span style="color:#75715e"></span>                                          
+        <span style="color:#111">first</span> <span style="color:#f92672">-=</span> <span style="color:#111">v175</span> <span style="color:#f92672">^</span> <span style="color:#111">v176</span><span style="color:#111">;</span>  <span style="color:#75715e">// xor this to get the decrypted  first value
+</span><span style="color:#75715e"></span>        <span style="color:#111">v185</span><span style="color:#f92672">+=</span><span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+
+    <span style="color:#111">}</span>
+    <span style="color:#00a8c8">while</span> <span style="color:#111">(</span><span style="color:#111">v185</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0x478</span><span style="color:#111">);</span>
+    
+
+    <span style="color:#111">printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;first = 0x%x , second = 0x%x</span><span style="color:#8045ff">\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">,</span> <span style="color:#111">first</span><span style="color:#111">,</span> <span style="color:#111">second</span><span style="color:#111">);</span>
+
+    <span style="color:#111">output</span><span style="color:#111">[</span><span style="color:#ae81ff">0</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">first</span><span style="color:#111">;</span>
+    <span style="color:#111">output</span><span style="color:#111">[</span><span style="color:#ae81ff">1</span><span style="color:#111">]</span><span style="color:#f92672">=</span><span style="color:#111">second</span><span style="color:#111">;</span>
+    
+
+<span style="color:#111">}</span>
+</code></pre></div><p>using it on the cipher 0xF06203EC3D2C5B74 for the level1 with the key extracted using gdb we get</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_20-13-17.png"
+  alt="Screenshot from 2025-07-07 20-13-17.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>it worked!!</p>
+<h2 id="the-auto-part">the “auto” part:</h2>
+<p>to start scripting decryption for the 11423 executables we first need to know what changes between them, opening the second executable and reversing it (just like in the “rev” part) i noticed that four things change:</p>
+<ul>
+<li>the key (v91)</li>
+<li>the constant that increments v168 is different</li>
+<li>the four static values that are calculated inside the loop and used for shifting</li>
+<li>and obviously the cipher text</li>
+</ul>
+<p>to get the right input for any executable we have to extract these values, but first i updated my decrypt function so it uses dynamic keys, constant and shifts, you can check it <a href="/r3ctf-r3loads/dynamic-decrypt.c">here</a>.</p>
+<p>to extract the values dynamicly i used libdebug, since it is waaaaay faster than gdb scripting (gdb scripting would have took hours).</p>
+<h4 id="extracting-the-key">Extracting the key</h4>
+<p>we start by extracting the key, to do that i set a breakpoint at read then return from read and go four instructions after it, to reach the call for the encrypt function</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_21-16-33.png"
+  alt="Screenshot from 2025-07-07 21-16-33.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>after that i read <code>4*sizeof(unsigned int)</code> bytes of memory starting at rsi to get the key.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> <span style="color:#111">libdebug</span> <span style="color:#f92672">import</span> <span style="color:#111">debugger</span>
+<span style="color:#111">d</span> <span style="color:#f92672">=</span> <span style="color:#111">debugger</span><span style="color:#111">(</span><span style="color:#d88200">&#34;./beatme&#34;</span><span style="color:#111">)</span>
+
+<span style="color:#111">pipe</span><span style="color:#f92672">=</span> <span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">run</span><span style="color:#111">()</span>
+<span style="color:#111">pipe</span><span style="color:#f92672">.</span><span style="color:#111">send</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">8</span><span style="color:#111">)</span> <span style="color:#75715e"># send dummy data so it does not get stuck at read</span>
+<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">breakpoint</span><span style="color:#111">(</span><span style="color:#d88200">&#39;read&#39;</span><span style="color:#111">)</span>
+
+<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">cont</span><span style="color:#111">()</span> <span style="color:#75715e"># now we are the start of read</span>
+<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">finish</span><span style="color:#111">()</span> <span style="color:#75715e"># return for the read function</span>
+<span style="color:#00a8c8">for</span> <span style="color:#111">_</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">4</span><span style="color:#111">):</span>
+		<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">step</span><span style="color:#111">()</span>
+<span style="color:#75715e"># now we are at &#34;call encrypt&#34;</span>
+<span style="color:#111">rsi</span>  <span style="color:#f92672">=</span> <span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">regs</span><span style="color:#f92672">.</span><span style="color:#111">rsi</span>
+<span style="color:#111">data</span> <span style="color:#f92672">=</span> <span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">memory</span><span style="color:#111">[</span><span style="color:#111">rsi</span><span style="color:#111">:</span><span style="color:#111">rsi</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x10</span><span style="color:#111">]</span>
+<span style="color:#111">key</span>  <span style="color:#f92672">=</span> <span style="color:#111">[</span><span style="color:#111">int</span><span style="color:#f92672">.</span><span style="color:#111">from_bytes</span><span style="color:#111">(</span><span style="color:#111">data</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">:</span><span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span><span style="color:#111">],</span> <span style="color:#d88200">&#39;little&#39;</span><span style="color:#111">)</span> <span style="color:#00a8c8">for</span> <span style="color:#111">i</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x10</span><span style="color:#111">,</span> <span style="color:#ae81ff">4</span><span style="color:#111">)]</span> 
+</code></pre></div><h4 id="extracting-the-cipher">Extracting the cipher</h4>
+<p>to extract the cipher from the binary, i noticed that the instructions that do the loading and  comparision are always the same</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_21-37-48.png"
+  alt="Screenshot from 2025-07-07 21-37-48.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>bytes 8b45a83d are the mov instruction and the first byte of cmp instruction, i use these to find their offset in the binary then add 4 and read a dword.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#00a8c8">with</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">f</span><span style="color:#d88200">&#34;./beatme&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;rb&#39;</span><span style="color:#111">)</span> <span style="color:#00a8c8">as</span> <span style="color:#111">f</span><span style="color:#111">:</span>
+        <span style="color:#111">filedata</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">.</span><span style="color:#111">read</span><span style="color:#111">()</span>
+<span style="color:#111">a</span> <span style="color:#f92672">=</span> <span style="color:#111">filedata</span><span style="color:#f92672">.</span><span style="color:#111">find</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;</span><span style="color:#8045ff">\x8b\x45\xa8\x3d</span><span style="color:#d88200">&#39;</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span> <span style="color:#75715e"># mov    eax,DWORD PTR [rbp-0x58] ; cmp</span>
+<span style="color:#111">b</span> <span style="color:#f92672">=</span> <span style="color:#111">filedata</span><span style="color:#f92672">.</span><span style="color:#111">find</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;</span><span style="color:#8045ff">\x8b\x45\xac\x3d</span><span style="color:#d88200">&#39;</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span> <span style="color:#75715e"># mov    eax,DWORD PTR [rbp-0x54] ; cmp</span>
+
+<span style="color:#111">cipher</span> <span style="color:#f92672">=</span> <span style="color:#111">int</span><span style="color:#f92672">.</span><span style="color:#111">from_bytes</span><span style="color:#111">(</span><span style="color:#111">filedata</span><span style="color:#111">[</span><span style="color:#111">a</span><span style="color:#111">:</span><span style="color:#111">a</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span><span style="color:#111">],</span> <span style="color:#d88200">&#39;little&#39;</span><span style="color:#111">)</span> <span style="color:#f92672">|</span> <span style="color:#111">(</span><span style="color:#111">int</span><span style="color:#f92672">.</span><span style="color:#111">from_bytes</span><span style="color:#111">(</span><span style="color:#111">filedata</span><span style="color:#111">[</span><span style="color:#111">b</span><span style="color:#111">:</span><span style="color:#111">b</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span><span style="color:#111">],</span> <span style="color:#d88200">&#39;little&#39;</span><span style="color:#111">)</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">32</span><span style="color:#111">)</span>
+</code></pre></div><h4 id="extracting-the-shift-values">Extracting the shift values</h4>
+<p>now we need to extract the shift values, to do that i decided to set a breakpoint at the end of the pow function and print the value at rax (return value).</p>
+<p><img
+  src="/r3ctf-r3loads/Screenshot_from_2025-07-07_22-04-49.png"
+  alt="Screenshot from 2025-07-07 22-04-49.png"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>breakpoint is set at 0x162f.</p>
+<p>i knew by observation the the pow function was the same in all executables, and since we can’t hard code the address of pow cause it changes, i decided to search for the offset of pow by it’s first bytes, and we add the size of it, to reach it’s last instruction.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#111">powstart</span> <span style="color:#f92672">=</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;</span><span style="color:#8045ff">\xf3\x0f\x1e\xfa</span><span style="color:#d88200">UH</span><span style="color:#8045ff">\x89\xe5\x89</span><span style="color:#d88200">}</span><span style="color:#8045ff">\xec\x89</span><span style="color:#d88200">u</span><span style="color:#8045ff">\xe8\x89</span><span style="color:#d88200">U</span><span style="color:#8045ff">\xe4\x83</span><span style="color:#d88200">}</span><span style="color:#8045ff">\xe8\x00</span><span style="color:#d88200">&#39;</span>
+<span style="color:#111">addr</span> <span style="color:#f92672">=</span> <span style="color:#111">filedata</span><span style="color:#f92672">.</span><span style="color:#111">find</span><span style="color:#111">(</span><span style="color:#111">powstart</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x3e</span> <span style="color:#75715e"># addr points to ret instruction of pow</span>
+</code></pre></div><p>now we use this to set a breakpoint and print the values at eax</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># after the code that extracts the key</span>
+<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">breakpoint</span><span style="color:#111">(</span><span style="color:#111">addr</span><span style="color:#111">,</span> <span style="color:#111">file</span><span style="color:#f92672">=</span><span style="color:#d88200">&#39;binary&#39;</span><span style="color:#111">)</span>
+
+<span style="color:#111">shifts</span> <span style="color:#f92672">=</span> <span style="color:#111">[]</span>
+<span style="color:#00a8c8">for</span> <span style="color:#111">_</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">4</span><span style="color:#111">):</span>
+		<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">cont</span><span style="color:#111">()</span>
+    <span style="color:#111">shifts</span><span style="color:#f92672">.</span><span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#111">math</span><span style="color:#f92672">.</span><span style="color:#111">log2</span><span style="color:#111">(</span><span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">regs</span><span style="color:#f92672">.</span><span style="color:#111">rax</span><span style="color:#111">))</span>
+    <span style="color:#75715e"># we use math.log2 since divising by 0x8</span>
+    <span style="color:#75715e"># is the same as shifting to right by 3 (log2(8) == 3)</span>
+</code></pre></div><h4 id="extracting-the-constant-that-increments-v168">Extracting the constant that increments v168</h4>
+<p>now to get the v168 increment constant c, we know from ida that v168 is stored at rbp-0x494, now each loop calls pow 4 times, so in the fifth call of pow (which we are setting a breapoint at), we would be in the second loop, v168 would be incremented one time, it would be equal to the increment constant, so we just get the value at v168.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># after the shifts extraction</span>
+<span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">cont</span><span style="color:#111">()</span>
+<span style="color:#111">rbp</span> <span style="color:#f92672">=</span> <span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">regs</span><span style="color:#f92672">.</span><span style="color:#111">rbp</span>
+<span style="color:#111">c</span> <span style="color:#f92672">=</span> <span style="color:#111">int</span><span style="color:#f92672">.</span><span style="color:#111">from_bytes</span><span style="color:#111">(</span><span style="color:#111">d</span><span style="color:#f92672">.</span><span style="color:#111">memory</span><span style="color:#111">[</span><span style="color:#111">rbp</span><span style="color:#f92672">-</span><span style="color:#ae81ff">0x494</span><span style="color:#111">:</span><span style="color:#111">rbp</span><span style="color:#f92672">-</span><span style="color:#ae81ff">0x494</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4</span><span style="color:#111">],</span> <span style="color:#d88200">&#39;little&#39;</span><span style="color:#111">)</span>
+</code></pre></div><p>and that’s it!</p>
+<p>after this we store all the extracted values in files. and we use them in the decryption in c, i did this because my decryption was in c.</p>
+<p>here are the final <a href="/r3ctf-r3loads/extract.py">extract.py</a> and <a href="/r3ctf-r3loads/decrypt.c">decrypt.c</a> scripts.</p>
+<p>after running them we get this jpg</p>
+<p><img
+  src="/r3ctf-r3loads/output.jpg"
+  alt="output.jpg"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+
+      
+      <div class="post-date">
+        <span class="g time">July 8, 2025 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/rev/">rev</a> <a href="https://nothoudaifa.github.io/tags/autorev/">autorev</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>
