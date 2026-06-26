@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>Extensif chall from ECSC 2026 writeup | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:url" content="https://nothoudaifa.github.io/posts/ecsc2026-extensif/">
+	<meta property="og:site_name" content="nothoudaifa">
+	<meta property="og:title" content="Extensif chall from ECSC 2026 writeup">
+	<meta property="og:description" content="you can check the challenge here
+TL;DR reversing an esp32 app image that does basic flag checking
+Solve we are given a file extensif.bin running file on it gives us this:
+$ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project name: &#34;extensif&#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8 it is not an elf, googling ESP-IDF i find this github list which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this ghidra extension, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-06-01T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-06-01T00:00:00+00:00">
+		<meta property="article:tag" content="Ctf">
+		<meta property="article:tag" content="Rev">
+		<meta property="article:tag" content="Hardware">
+
+    
+	<meta itemprop="name" content="Extensif chall from ECSC 2026 writeup">
+	<meta itemprop="description" content="you can check the challenge here
+TL;DR reversing an esp32 app image that does basic flag checking
+Solve we are given a file extensif.bin running file on it gives us this:
+$ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project name: &#34;extensif&#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8 it is not an elf, googling ESP-IDF i find this github list which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this ghidra extension, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.">
+	<meta itemprop="datePublished" content="2026-06-01T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-01T00:00:00+00:00">
+	<meta itemprop="wordCount" content="883">
+	<meta itemprop="keywords" content="Ctf,Rev,Hardware">
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/ecsc2026-extensif/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "Extensif chall from ECSC 2026 writeup",
+      "headline": "Extensif chall from ECSC 2026 writeup",
+      "alternativeHeadline": "",
+      "description": "\u003cp\u003eyou can check the challenge \u003ca href=\u0022https:\/\/hackropole.fr\/en\/challenges\/reverse\/fcsc2026-reverse-extensif\/\u0022\u003ehere\u003c\/a\u003e\u003c\/p\u003e\n\u003ch2 id=\u0022tldr\u0022\u003eTL;DR\u003c\/h2\u003e\n\u003cp\u003ereversing an esp32 app image that does basic flag checking\u003c\/p\u003e\n\u003ch2 id=\u0022solve\u0022\u003eSolve\u003c\/h2\u003e\n\u003cp\u003ewe are given a file \u003ccode\u003eextensif.bin\u003c\/code\u003e running \u003ccode\u003efile\u003c\/code\u003e on it gives us this:\u003c\/p\u003e\n\u003cpre tabindex=\u00220\u0022\u003e\u003ccode\u003e$ file extensif.bin \nextensif.bin: ESP-IDF application image for ESP32, project name: \u0026#34;extensif\u0026#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8\n\u003c\/code\u003e\u003c\/pre\u003e\u003cp\u003eit is not an elf, googling \u003ccode\u003eESP-IDF\u003c\/code\u003e i find this \u003ca href=\u0022https:\/\/github.com\/BlackVS\/ESP32-reversing\u0022\u003egithub list\u003c\/a\u003e which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this \u003ca href=\u0022https:\/\/github.com\/Ebiroll\/esp32_flash_loader\u0022\u003eghidra extension\u003c\/a\u003e, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.\u003c\/p\u003e",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/ecsc2026-extensif\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2026",
+      "dateCreated": "2026-06-01T00:00:00.00Z",
+      "datePublished": "2026-06-01T00:00:00.00Z",
+      "dateModified": "2026-06-01T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/ecsc2026-extensif\/",
+      "wordCount" : "883",
+      "genre" : [ "ctf" , "rev" , "hardware" ],
+      "keywords" : [ "ctf" , "rev" , "hardware" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">Extensif chall from ECSC 2026 writeup</h2>
+      <p>you can check the challenge <a href="https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/">here</a></p>
+<h2 id="tldr">TL;DR</h2>
+<p>reversing an esp32 app image that does basic flag checking</p>
+<h2 id="solve">Solve</h2>
+<p>we are given a file <code>extensif.bin</code> running <code>file</code> on it gives us this:</p>
+<pre tabindex="0"><code>$ file extensif.bin 
+extensif.bin: ESP-IDF application image for ESP32, project name: &#34;extensif&#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8
+</code></pre><p>it is not an elf, googling <code>ESP-IDF</code> i find this <a href="https://github.com/BlackVS/ESP32-reversing">github list</a> which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this <a href="https://github.com/Ebiroll/esp32_flash_loader">ghidra extension</a>, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.</p>
+<p>when first loading the binary i find my self in main which is not very helpfull since the main is not of the flag checker rather it is of whatever runs on esp32 when it boots (apparently it&rsquo;s freertos, i grepped for it inside the binary), so to find the user code, i opened Windows-&gt;Defined Strings and searched for the flag format <code>FCSC</code>.
+i found this:
+<img
+  src="/ecsc2026-extensif/2026-06-26%7c17:41:41.464.png"
+  alt="FCSC String filter screenshot"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+
+getting the xrefs for this string i find my self at the function that appears to be the main user code</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">void</span> <span style="color:#75af00">UndefinedFunction_400d6000</span><span style="color:#111">(</span><span style="color:#00a8c8">void</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">code</span> <span style="color:#f92672">*</span><span style="color:#111">pcVar1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">undefined</span> <span style="color:#f92672">*</span><span style="color:#111">puVar2</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">undefined</span> <span style="color:#f92672">*</span><span style="color:#111">puVar3</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">int</span> <span style="color:#111">iVar4</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">int</span> <span style="color:#111">iVar5</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">char</span> <span style="color:#111">acStack_51</span> <span style="color:#111">[</span><span style="color:#ae81ff">33</span><span style="color:#111">];</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">byte</span> <span style="color:#111">abStack_30</span> <span style="color:#111">[</span><span style="color:#ae81ff">48</span><span style="color:#111">];</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_s_Bienvenue_400d0698</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75af00">func_0x400d8590</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">iVar4</span> <span style="color:#f92672">=</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_DAT_400d069c</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar5</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x46</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar4</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x43</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar4</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x53</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar4</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x43</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75af00">func_0x400d60e4</span><span style="color:#111">();</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x10</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar3</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_BYTE_400d06a0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_DAT_400d069c</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">abStack_30</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">puVar3</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">^</span> <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">];</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#75af00">PTR_s_Entrez_le_flag_</span><span style="color:#111">(</span><span style="color:#ae81ff">16</span><span style="color:#111">_chars</span><span style="color:#111">)</span><span style="color:#f92672">:</span><span style="color:#111">_400d06a4</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75af00">func_0x400d8438</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#75af00">func_0x40088434</span><span style="color:#111">();</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">pcVar1</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">code</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">PTR_fflush_400d06b8</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#111">pcVar1</span><span style="color:#111">)(</span><span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#111">undefined4</span> <span style="color:#f92672">*</span><span style="color:#111">)(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span><span style="color:#111">));</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#75af00">func_0x40088434</span><span style="color:#111">();</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#75af00">func_0x400d8048</span><span style="color:#111">(</span><span style="color:#111">acStack_51</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">,</span><span style="color:#ae81ff">0x20</span><span style="color:#111">,</span><span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#111">undefined4</span> <span style="color:#f92672">*</span><span style="color:#111">)(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span><span style="color:#111">));</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_s_Erreur_de_lecture_400d06a8</span><span style="color:#111">;</span> <span style="color:#75715e">// -- (1)
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75af00">func_0x400d8590</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">else</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">pcVar1</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">code</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">PTR_strlen_400d0660</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#111">pcVar1</span><span style="color:#111">)(</span><span style="color:#111">acStack_51</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">acStack_51</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">==</span> <span style="color:#d88200">&#39;\n&#39;</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">acStack_51</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#d88200">&#39;\0&#39;</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x10</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">pcVar1</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">code</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">PTR_memcmp_400d067c</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#111">pcVar1</span><span style="color:#111">)(</span><span style="color:#111">acStack_51</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">,</span><span style="color:#111">abStack_30</span><span style="color:#111">,</span><span style="color:#ae81ff">0x10</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75af00">func_0x400d8504</span><span style="color:#111">(</span><span style="color:#ae81ff">10</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_DAT_400d06b0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75af00">func_0x400d8438</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">,</span><span style="color:#111">acStack_51</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#00a8c8">return</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_s_</span><span style="color:#111">[</span><span style="color:#f92672">-</span><span style="color:#111">]</span><span style="color:#111">_Essaie_encore_400d06b4</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">func_0x400d8590</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">return</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_s_</span><span style="color:#111">[</span><span style="color:#f92672">-</span><span style="color:#111">]</span><span style="color:#111">_Longueur_invalide</span><span style="color:#111">.</span><span style="color:#111">_400d06ac</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">func_0x400d8590</span><span style="color:#111">(</span><span style="color:#111">puVar2</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">return</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>as you can see, it&rsquo;s pretty bad decompilation, one reason for this is that the architecture of the esp32 Xtensa uses 24 or 16 bit instructions sizes which means you need more than one instruction to assgin an address to registers, so what the compiler does is it puts addresses into nearby memory locations so they can be addressed relatively (got this from <a href="https://vik0t0r.github.io/posts/ESP32-arduino-RE/#step-4-analysis">here</a>).</p>
+<p>anyway, this program is reading a 0x10 long flag into <code>acStack_51 + 1</code> and memcmp&rsquo;ing it with <code>abStack_30</code> so we just need to figure out what&rsquo;s in it, i used error messages to figure out what it&rsquo;s doing for example it&rsquo;s trying to print the message <code>PTR_s_Erreur_de_lecture_400d06a8</code> which obviously means the function before tries to read input.</p>
+<p>the program tries to write the xor of PTR_BYTE_400d06a and PTR_DAT_400d069c into <code>abStack_30</code> in here:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#00a8c8">for</span> <span style="color:#111">(</span><span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x10</span><span style="color:#111">;</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">=</span> <span style="color:#111">iVar5</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar3</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_BYTE_400d06a0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">puVar2</span> <span style="color:#f92672">=</span> <span style="color:#111">PTR_DAT_400d069c</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">abStack_30</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">puVar3</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">]</span> <span style="color:#f92672">^</span> <span style="color:#111">puVar2</span><span style="color:#111">[</span><span style="color:#111">iVar5</span><span style="color:#111">];</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span></code></pre></div><p>PTR_BYTE_400d06a0 is constant and PTR_DAT_400d069c is set just above it, first it&rsquo;s set to b&rsquo;FCSCFCSCFCSCFCSC&rsquo; using:</p>
+<pre tabindex="0"><code>  for (iVar5 = 0; iVar5 &lt; 4; iVar5 = iVar5 + 1) {
+    iVar4 = iVar5 * 4;
+    puVar2 = PTR_DAT_400d069c;
+    puVar2[iVar5 * 4] = 0x46;
+    puVar2[iVar4 + 1] = 0x43;
+    puVar2[iVar4 + 2] = 0x53;
+    puVar2[iVar4 + 3] = 0x43;
+  }
+</code></pre><p>then the first 12 bytes are overwritten by the call to <code>func_0x400d60e4</code></p>
+<p>inspecting <code>func_0x400d60e4</code>
+we see it&rsquo;s decompilation and disassembly:
+<img
+  src="/ecsc2026-extensif/2026-06-26%7c18:07:55.187.png"
+  alt="func_0x400d60e4 decomp"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+
+it calls <code>func_0x400d60f4</code> with 0x4a and <code>PTR_DAT_400d069c</code>
+here is the code for <code>func_0x400d60f4</code>
+<img
+  src="/ecsc2026-extensif/2026-06-26%7c18:11:21.474.png"
+  alt="func_0x400d60f4 decomp"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+
+it writes the first argument into the first byte of the second argument and it writes the first byte of the return address into the second byte and incremnts the first arg by one and second arg by 2 and keeps calling it self recursively until <code>arg1 &amp; 8 == 0</code></p>
+<p>getting the return addresses is easy, the return address is the address of the instrution after the call instruction, which means:
+for the first time when it&rsquo;s called by <code>func_0x400d60e4</code></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">      400d60ec 65 00 00      call8     SUB_400d60f4
+here-&gt;400d60ef 1d f0         retw.n
+</code></pre><p>we can see that it&rsquo;s 0xef
+and for the rest it&rsquo;s 0x08</p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">      400d6105 e5 fe ff      call8     SUB_400d60f4
+                         LAB_400d6108                              XREF[1]:   400d60f7(j)  
+here-&gt;400d6108 1d f0         retw.n
+</code></pre><p>now tracing the execution of this function we can deduce that the final value of <code>PTR_DAT_400d069c</code> is: <code>0x4a,0xef, 0x4b, 0x8, 0x4c, 0x8, 0x4d, 0x8, 0x4e, 0x8, 0x4f, 0x8, 0x46, 0x43, 0x53, 0x43</code> and the extracted <code>PTR_BYTE_400d06a0</code> is: <code>0x79, 0x8D, 0x2D, 0x3E, 0x2E, 0x6E, 0x79, 0x6D, 0x28, 0x38, 0x2D, 0x38, 0x77, 0x75, 0x60, 0x21</code></p>
+<p>now we can get the final flag using this script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#111">data_400d069c</span> <span style="color:#f92672">=</span> <span style="color:#111">[</span><span style="color:#ae81ff">0x4a</span><span style="color:#111">,</span><span style="color:#ae81ff">0xef</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x4b</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x4c</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x4d</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x4e</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x4f</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x46</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x43</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x53</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x43</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">data_400d06a0</span> <span style="color:#f92672">=</span> <span style="color:#111">[</span><span style="color:#ae81ff">0x79</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x8D</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2D</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x3E</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2E</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x6E</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x79</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x6D</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x28</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x38</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x2D</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x38</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x77</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x75</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x60</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x21</span><span style="color:#111">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">r</span> <span style="color:#f92672">=</span> <span style="color:#111">[]</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">for</span> <span style="color:#111">i</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">0x10</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">r</span><span style="color:#f92672">.</span><span style="color:#111">append</span><span style="color:#111">(</span><span style="color:#111">data_400d069c</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]</span><span style="color:#f92672">^</span><span style="color:#111">data_400d06a0</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">])</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;FCSC{&#39;</span><span style="color:#f92672">+</span><span style="color:#111">bytes</span><span style="color:#111">(</span><span style="color:#111">r</span><span style="color:#111">)</span><span style="color:#f92672">+</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;}&#39;</span><span style="color:#111">)</span>
+</span></span></code></pre></div><p>our final flag is : <code>FCSC{3bf6bf4ef0b0163b}</code></p>
+
+      
+      <div class="post-date">
+        <span class="g time">June 1, 2026 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/rev/">rev</a> <a href="https://nothoudaifa.github.io/tags/hardware/">hardware</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>

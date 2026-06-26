@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
 		<title>Tags on nothoudaifa</title>
-		<link>http://localhost:1313/tags/</link>
+		<link>https://nothoudaifa.github.io/tags/</link>
 		<description>Recent content in Tags on nothoudaifa</description>
 		<generator>Hugo</generator>
 		<language>en-us</language>
@@ -12,54 +12,54 @@
 		
 			<lastBuildDate>Mon, 01 Jun 2026 00:00:00 +0000</lastBuildDate>
 		
-			<atom:link href="http://localhost:1313/tags/atom.xml" rel="self" type="application/rss+xml" />
+			<atom:link href="https://nothoudaifa.github.io/tags/atom.xml" rel="self" type="application/rss+xml" />
 			<item>
 				<title>Ctf</title>
-				<link>http://localhost:1313/tags/ctf/</link>
+				<link>https://nothoudaifa.github.io/tags/ctf/</link>
 				<pubDate>Mon, 01 Jun 2026 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/ctf/</guid>
+				<guid>https://nothoudaifa.github.io/tags/ctf/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Hardware</title>
-				<link>http://localhost:1313/tags/hardware/</link>
+				<link>https://nothoudaifa.github.io/tags/hardware/</link>
 				<pubDate>Mon, 01 Jun 2026 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/hardware/</guid>
+				<guid>https://nothoudaifa.github.io/tags/hardware/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Rev</title>
-				<link>http://localhost:1313/tags/rev/</link>
+				<link>https://nothoudaifa.github.io/tags/rev/</link>
 				<pubDate>Mon, 01 Jun 2026 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/rev/</guid>
+				<guid>https://nothoudaifa.github.io/tags/rev/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Pwn</title>
-				<link>http://localhost:1313/tags/pwn/</link>
+				<link>https://nothoudaifa.github.io/tags/pwn/</link>
 				<pubDate>Mon, 14 Jul 2025 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/pwn/</guid>
+				<guid>https://nothoudaifa.github.io/tags/pwn/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Autorev</title>
-				<link>http://localhost:1313/tags/autorev/</link>
+				<link>https://nothoudaifa.github.io/tags/autorev/</link>
 				<pubDate>Tue, 08 Jul 2025 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/autorev/</guid>
+				<guid>https://nothoudaifa.github.io/tags/autorev/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Vm</title>
-				<link>http://localhost:1313/tags/vm/</link>
+				<link>https://nothoudaifa.github.io/tags/vm/</link>
 				<pubDate>Mon, 16 Jun 2025 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/vm/</guid>
+				<guid>https://nothoudaifa.github.io/tags/vm/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Misc</title>
-				<link>http://localhost:1313/tags/misc/</link>
+				<link>https://nothoudaifa.github.io/tags/misc/</link>
 				<pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/tags/misc/</guid>
+				<guid>https://nothoudaifa.github.io/tags/misc/</guid>
 				<description></description>
 			</item>
 	</channel>
