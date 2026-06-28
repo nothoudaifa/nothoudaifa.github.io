@@ -1,14 +1,14 @@
 ---
 author: "nothoudaifa"
 title: "Extensif chall from ECSC 2026 writeup"
-date: "2026-06-01"
+date: "2026-06-26"
 tags: 
 - ctf 
 - rev
 - hardware
 ---
 
-you can check the challenge [here](https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/)
+you can check the challenge [here](https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/), difficulty is 1 star.
 
 ## TL;DR
 reversing an esp32 app image that does basic flag checking

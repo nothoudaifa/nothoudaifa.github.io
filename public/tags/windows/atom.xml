@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Windows on nothoudaifa</title>
+		<link>https://nothoudaifa.github.io/tags/windows/</link>
+		<description>Recent content in Windows on nothoudaifa</description>
+		<generator>Hugo</generator>
+		<language>en-us</language>
+		
+		
+		
+		
+			<lastBuildDate>Sun, 28 Jun 2026 00:00:00 +0000</lastBuildDate>
+		
+			<atom:link href="https://nothoudaifa.github.io/tags/windows/atom.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>Stealerusk chall from Alpacahack B-Side writeup</title>
+				<link>https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/</link>
+				<pubDate>Sun, 28 Jun 2026 00:00:00 +0000</pubDate>
+				<guid>https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/</guid>
+				<description>&lt;p&gt;this was a B-Side challenge released on Alpacahack, you can check it out &lt;a href=&#34;https://alpacahack.com/daily-bside/challenges/stealerusk?month=2026-03&#34;&gt;here&lt;/a&gt;, it&amp;rsquo;s difficulty is Very Hard 7.0 .&lt;/p&gt;&#xA;&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;&#xA;&lt;p&gt;reversing a windows malware that takes an image from the webcam and sends it to a C2 server.&lt;/p&gt;&#xA;&lt;h2 id=&#34;solve&#34;&gt;Solve&lt;/h2&gt;&#xA;&lt;p&gt;we are given two files &lt;code&gt;chal.exe&lt;/code&gt; and &lt;code&gt;packet.pcap&lt;/code&gt;, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:&#xA;&lt;img&#xA;  src=&#34;https://nothoudaifa.github.io/alpaca-bside-stealerusk/2026-06-28%7c13:27:16.166.png&#34;&#xA;  alt=&#34;wireshark screenshot&#34;&#xA;  loading=&#34;lazy&#34;&#xA;  decoding=&#34;async&#34;&#xA;  class=&#34;full-width&#34;&#xA;/&gt;&#xA;&#xA;&lt;/p&gt;</description>
+			</item>
+	</channel>
+</rss>

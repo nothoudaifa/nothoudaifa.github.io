@@ -10,15 +10,22 @@
 		
 		
 		
-			<lastBuildDate>Mon, 01 Jun 2026 00:00:00 +0000</lastBuildDate>
+			<lastBuildDate>Sun, 28 Jun 2026 00:00:00 +0000</lastBuildDate>
 		
 			<atom:link href="https://nothoudaifa.github.io/tags/ctf/atom.xml" rel="self" type="application/rss+xml" />
 			<item>
+				<title>Stealerusk chall from Alpacahack B-Side writeup</title>
+				<link>https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/</link>
+				<pubDate>Sun, 28 Jun 2026 00:00:00 +0000</pubDate>
+				<guid>https://nothoudaifa.github.io/posts/alpaca-bside-stealerusk/</guid>
+				<description>&lt;p&gt;this was a B-Side challenge released on Alpacahack, you can check it out &lt;a href=&#34;https://alpacahack.com/daily-bside/challenges/stealerusk?month=2026-03&#34;&gt;here&lt;/a&gt;, it&amp;rsquo;s difficulty is Very Hard 7.0 .&lt;/p&gt;&#xA;&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;&#xA;&lt;p&gt;reversing a windows malware that takes an image from the webcam and sends it to a C2 server.&lt;/p&gt;&#xA;&lt;h2 id=&#34;solve&#34;&gt;Solve&lt;/h2&gt;&#xA;&lt;p&gt;we are given two files &lt;code&gt;chal.exe&lt;/code&gt; and &lt;code&gt;packet.pcap&lt;/code&gt;, i started by checking the pcap, it only contains a single POST request with some binary data as you can see here:&#xA;&lt;img&#xA;  src=&#34;https://nothoudaifa.github.io/alpaca-bside-stealerusk/2026-06-28%7c13:27:16.166.png&#34;&#xA;  alt=&#34;wireshark screenshot&#34;&#xA;  loading=&#34;lazy&#34;&#xA;  decoding=&#34;async&#34;&#xA;  class=&#34;full-width&#34;&#xA;/&gt;&#xA;&#xA;&lt;/p&gt;</description>
+			</item>
+			<item>
 				<title>Extensif chall from ECSC 2026 writeup</title>
 				<link>https://nothoudaifa.github.io/posts/ecsc2026-extensif/</link>
-				<pubDate>Mon, 01 Jun 2026 00:00:00 +0000</pubDate>
+				<pubDate>Fri, 26 Jun 2026 00:00:00 +0000</pubDate>
 				<guid>https://nothoudaifa.github.io/posts/ecsc2026-extensif/</guid>
-				<description>&lt;p&gt;you can check the challenge &lt;a href=&#34;https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/&#34;&gt;here&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;&#xA;&lt;p&gt;reversing an esp32 app image that does basic flag checking&lt;/p&gt;&#xA;&lt;h2 id=&#34;solve&#34;&gt;Solve&lt;/h2&gt;&#xA;&lt;p&gt;we are given a file &lt;code&gt;extensif.bin&lt;/code&gt; running &lt;code&gt;file&lt;/code&gt; on it gives us this:&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ file extensif.bin &#xA;extensif.bin: ESP-IDF application image for ESP32, project name: &amp;#34;extensif&amp;#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;it is not an elf, googling &lt;code&gt;ESP-IDF&lt;/code&gt; i find this &lt;a href=&#34;https://github.com/BlackVS/ESP32-reversing&#34;&gt;github list&lt;/a&gt; which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this &lt;a href=&#34;https://github.com/Ebiroll/esp32_flash_loader&#34;&gt;ghidra extension&lt;/a&gt;, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.&lt;/p&gt;</description>
+				<description>&lt;p&gt;you can check the challenge &lt;a href=&#34;https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/&#34;&gt;here&lt;/a&gt;, difficulty is 1 star.&lt;/p&gt;&#xA;&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;&#xA;&lt;p&gt;reversing an esp32 app image that does basic flag checking&lt;/p&gt;&#xA;&lt;h2 id=&#34;solve&#34;&gt;Solve&lt;/h2&gt;&#xA;&lt;p&gt;we are given a file &lt;code&gt;extensif.bin&lt;/code&gt; running &lt;code&gt;file&lt;/code&gt; on it gives us this:&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ file extensif.bin &#xA;extensif.bin: ESP-IDF application image for ESP32, project name: &amp;#34;extensif&amp;#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;it is not an elf, googling &lt;code&gt;ESP-IDF&lt;/code&gt; i find this &lt;a href=&#34;https://github.com/BlackVS/ESP32-reversing&#34;&gt;github list&lt;/a&gt; which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this &lt;a href=&#34;https://github.com/Ebiroll/esp32_flash_loader&#34;&gt;ghidra extension&lt;/a&gt;, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.&lt;/p&gt;</description>
 			</item>
 			<item>
 				<title>writeup for pwn/cosmofile chall from l3akctf 2025</title>

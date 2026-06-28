@@ -10,28 +10,28 @@
     <meta property="og:url" content="https://nothoudaifa.github.io/posts/ecsc2026-extensif/">
 	<meta property="og:site_name" content="nothoudaifa">
 	<meta property="og:title" content="Extensif chall from ECSC 2026 writeup">
-	<meta property="og:description" content="you can check the challenge here
+	<meta property="og:description" content="you can check the challenge here, difficulty is 1 star.
 TL;DR reversing an esp32 app image that does basic flag checking
 Solve we are given a file extensif.bin running file on it gives us this:
 $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project name: &#34;extensif&#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8 it is not an elf, googling ESP-IDF i find this github list which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this ghidra extension, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.">
 	<meta property="og:locale" content="en_us">
 	<meta property="og:type" content="article">
 		<meta property="article:section" content="posts">
-		<meta property="article:published_time" content="2026-06-01T00:00:00+00:00">
-		<meta property="article:modified_time" content="2026-06-01T00:00:00+00:00">
+		<meta property="article:published_time" content="2026-06-26T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-06-26T00:00:00+00:00">
 		<meta property="article:tag" content="Ctf">
 		<meta property="article:tag" content="Rev">
 		<meta property="article:tag" content="Hardware">
 
     
 	<meta itemprop="name" content="Extensif chall from ECSC 2026 writeup">
-	<meta itemprop="description" content="you can check the challenge here
+	<meta itemprop="description" content="you can check the challenge here, difficulty is 1 star.
 TL;DR reversing an esp32 app image that does basic flag checking
 Solve we are given a file extensif.bin running file on it gives us this:
 $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project name: &#34;extensif&#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8 it is not an elf, googling ESP-IDF i find this github list which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this ghidra extension, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.">
-	<meta itemprop="datePublished" content="2026-06-01T00:00:00+00:00">
-	<meta itemprop="dateModified" content="2026-06-01T00:00:00+00:00">
-	<meta itemprop="wordCount" content="883">
+	<meta itemprop="datePublished" content="2026-06-26T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-26T00:00:00+00:00">
+	<meta itemprop="wordCount" content="887">
 	<meta itemprop="keywords" content="Ctf,Rev,Hardware">
     
     <link rel="canonical" href="https://nothoudaifa.github.io/posts/ecsc2026-extensif/">
@@ -57,7 +57,7 @@ $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project n
       "name": "Extensif chall from ECSC 2026 writeup",
       "headline": "Extensif chall from ECSC 2026 writeup",
       "alternativeHeadline": "",
-      "description": "\u003cp\u003eyou can check the challenge \u003ca href=\u0022https:\/\/hackropole.fr\/en\/challenges\/reverse\/fcsc2026-reverse-extensif\/\u0022\u003ehere\u003c\/a\u003e\u003c\/p\u003e\n\u003ch2 id=\u0022tldr\u0022\u003eTL;DR\u003c\/h2\u003e\n\u003cp\u003ereversing an esp32 app image that does basic flag checking\u003c\/p\u003e\n\u003ch2 id=\u0022solve\u0022\u003eSolve\u003c\/h2\u003e\n\u003cp\u003ewe are given a file \u003ccode\u003eextensif.bin\u003c\/code\u003e running \u003ccode\u003efile\u003c\/code\u003e on it gives us this:\u003c\/p\u003e\n\u003cpre tabindex=\u00220\u0022\u003e\u003ccode\u003e$ file extensif.bin \nextensif.bin: ESP-IDF application image for ESP32, project name: \u0026#34;extensif\u0026#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8\n\u003c\/code\u003e\u003c\/pre\u003e\u003cp\u003eit is not an elf, googling \u003ccode\u003eESP-IDF\u003c\/code\u003e i find this \u003ca href=\u0022https:\/\/github.com\/BlackVS\/ESP32-reversing\u0022\u003egithub list\u003c\/a\u003e which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this \u003ca href=\u0022https:\/\/github.com\/Ebiroll\/esp32_flash_loader\u0022\u003eghidra extension\u003c\/a\u003e, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.\u003c\/p\u003e",
+      "description": "\u003cp\u003eyou can check the challenge \u003ca href=\u0022https:\/\/hackropole.fr\/en\/challenges\/reverse\/fcsc2026-reverse-extensif\/\u0022\u003ehere\u003c\/a\u003e, difficulty is 1 star.\u003c\/p\u003e\n\u003ch2 id=\u0022tldr\u0022\u003eTL;DR\u003c\/h2\u003e\n\u003cp\u003ereversing an esp32 app image that does basic flag checking\u003c\/p\u003e\n\u003ch2 id=\u0022solve\u0022\u003eSolve\u003c\/h2\u003e\n\u003cp\u003ewe are given a file \u003ccode\u003eextensif.bin\u003c\/code\u003e running \u003ccode\u003efile\u003c\/code\u003e on it gives us this:\u003c\/p\u003e\n\u003cpre tabindex=\u00220\u0022\u003e\u003ccode\u003e$ file extensif.bin \nextensif.bin: ESP-IDF application image for ESP32, project name: \u0026#34;extensif\u0026#34;, version 1, compiled on Mar 24 2026 15:29:16, IDF version: v5.5.1, entry address: 0x400811E8\n\u003c\/code\u003e\u003c\/pre\u003e\u003cp\u003eit is not an elf, googling \u003ccode\u003eESP-IDF\u003c\/code\u003e i find this \u003ca href=\u0022https:\/\/github.com\/BlackVS\/ESP32-reversing\u0022\u003egithub list\u003c\/a\u003e which contains a lot of resources on esp32 reversing, i spent some time browsing it and trying different stuff until i came up against this \u003ca href=\u0022https:\/\/github.com\/Ebiroll\/esp32_flash_loader\u0022\u003eghidra extension\u003c\/a\u003e, which is used to load esp32 flash dumps, using it i can load extensif.bin successfully into ghidra.\u003c\/p\u003e",
       "inLanguage": "en-us",
       "isFamilyFriendly": "true",
       "mainEntityOfPage": {
@@ -78,9 +78,9 @@ $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project n
       },
       "copyrightHolder" : "nothoudaifa",
       "copyrightYear" : "2026",
-      "dateCreated": "2026-06-01T00:00:00.00Z",
-      "datePublished": "2026-06-01T00:00:00.00Z",
-      "dateModified": "2026-06-01T00:00:00.00Z",
+      "dateCreated": "2026-06-26T00:00:00.00Z",
+      "datePublished": "2026-06-26T00:00:00.00Z",
+      "dateModified": "2026-06-26T00:00:00.00Z",
       "publisher":{
           "@type":"Organization",
           "name": "nothoudaifa",
@@ -94,7 +94,7 @@ $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project n
       },
       "image": "https://nothoudaifa.github.io/assets/favicon.ico",
       "url" : "https:\/\/nothoudaifa.github.io\/posts\/ecsc2026-extensif\/",
-      "wordCount" : "883",
+      "wordCount" : "887",
       "genre" : [ "ctf" , "rev" , "hardware" ],
       "keywords" : [ "ctf" , "rev" , "hardware" ]
   }
@@ -129,7 +129,7 @@ $ file extensif.bin extensif.bin: ESP-IDF application image for ESP32, project n
 <hr class="hr-list" style="padding: 0;margin: 0;">
     <section>
       <h2 class="post">Extensif chall from ECSC 2026 writeup</h2>
-      <p>you can check the challenge <a href="https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/">here</a></p>
+      <p>you can check the challenge <a href="https://hackropole.fr/en/challenges/reverse/fcsc2026-reverse-extensif/">here</a>, difficulty is 1 star.</p>
 <h2 id="tldr">TL;DR</h2>
 <p>reversing an esp32 app image that does basic flag checking</p>
 <h2 id="solve">Solve</h2>
@@ -276,7 +276,7 @@ here-&gt;400d6108 1d f0         retw.n
 
       
       <div class="post-date">
-        <span class="g time">June 1, 2026 </span> &#8729;
+        <span class="g time">June 26, 2026 </span> &#8729;
          
          <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/rev/">rev</a> <a href="https://nothoudaifa.github.io/tags/hardware/">hardware</a>
       </div>
